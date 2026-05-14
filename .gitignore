@@ -1,0 +1,7 @@
+docs/superpowers/
+.test-output/
+node_modules/
+venom*.log
+.opencode/
+.claude/
+.lola/

@@ -1,0 +1,99 @@
+version: '3'
+
+# This Taskfile is for *developers of this pack*. End users install the pack
+# into their AI assistant directly via lola:
+#
+#     lola mod add <repo-url>
+#     lola install docs-discipline
+#
+# The targets below set up a developer's local environment so the pack is
+# both runnable (tests, lint) and live in their own AI assistant (via
+# lola) for self-testing.
+
+tasks:
+  default:
+    cmds:
+      - task --list-all
+
+  install:
+    desc: 'Install this pack into the local AI assistant via lola + dev dependencies (SCOPE=user|project, default user)'
+    cmds:
+      # npm install must run BEFORE lola install: lola copies the scripts/
+      # directory verbatim, so node_modules has to exist in the source for
+      # the installed assistant location to be runnable without a separate
+      # npm install step at the destination.
+      - task: install:scripts
+      - task: install:lola
+
+  install:lola:
+    desc: 'Register and install this pack via lola (https://lobstertrap.org/lola/) — SCOPE=user|project, default user'
+    vars:
+      SCOPE: '{{.SCOPE | default "user"}}'
+    requires:
+      vars:
+        - name: SCOPE
+          enum: [user, project]
+    preconditions:
+      - sh: command -v lola
+        msg: |
+          lola is not installed. End users install this pack via lola — see
+          https://lobstertrap.org/lola/ for installation instructions.
+          If you only want to run the test suite, use: task install:scripts
+    cmds:
+      - lola mod add --name docs-discipline .
+      - lola install docs-discipline --scope {{.SCOPE}}
+
+  install:scripts:
+    desc: Install npm dependencies for the docs-organization scripts (merval)
+    cmds:
+      - cd module/skills/docs-organization/scripts && npm install
+
+  uninstall:
+    desc: Tear down everything this Taskfile installed — DESTRUCTIVE
+    cmds:
+      - task: uninstall:lola
+      - task: uninstall:scripts
+
+  uninstall:lola:
+    desc: Deregister this pack from lola and remove its skills from every assistant/scope — DESTRUCTIVE
+    preconditions:
+      - sh: command -v lola
+        msg: lola is not installed — nothing to uninstall.
+    cmds:
+      - lola mod rm -f docs-discipline
+
+  uninstall:scripts:
+    desc: Remove the docs-organization scripts' node_modules — DESTRUCTIVE
+    prompt: Remove module/skills/docs-organization/scripts/node_modules?
+    cmds:
+      - rm -rf module/skills/docs-organization/scripts/node_modules
+
+  test:
+    desc: Run all tests
+    deps: [test:unit, test:bash, test:e2e]
+
+  test:unit:
+    desc: Run node:test unit tests
+    cmds:
+      - cd module/skills/docs-organization/scripts && npm test
+
+  test:bash:
+    desc: Run bash script tests
+    cmds:
+      - bash module/skills/docs-organization/scripts/check-structure.test.sh
+      - bash module/skills/docs-organization/scripts/check-staleness.test.sh
+      - bash module/skills/adr/scripts/adr-index.test.sh
+
+  test:e2e:
+    desc: Run end-to-end Venom suite
+    vars:
+      REPO_ROOT:
+        sh: pwd
+    cmds:
+      - mkdir -p .test-output
+      - venom run tests/e2e/docs-discipline.venom.yml --output-dir=.test-output --var="WORKDIR={{.REPO_ROOT}}"
+
+  lint:
+    desc: Lint every mermaid diagram in the pack's own project docs
+    cmds:
+      - node module/skills/docs-organization/scripts/lint-mermaid.mjs module/ README.md
