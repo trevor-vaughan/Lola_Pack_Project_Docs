@@ -1,0 +1,23 @@
+{
+  "name": "Parchment",
+  "mode": "light",
+  "description": "Light-bg-only theme with filled pale-neutral clusters. Children nodes pop visually because their fills are darker than the cluster. Cross-bg constraint is intentionally dropped — use only when target rendering surface is known light.",
+  "nodes": {
+    "sysA": { "fill": "#3e6fa0", "text": "#ffffff" },
+    "sysB": { "fill": "#3a8054", "text": "#ffffff" },
+    "sysC": { "fill": "#a55726", "text": "#ffffff" },
+    "sysD": { "fill": "#7457b8", "text": "#ffffff" },
+    "sysE": { "fill": "#2d747e", "text": "#ffffff" },
+    "sysF": { "fill": "#5a6a7e", "text": "#ffffff" }
+  },
+  "cluster": {
+    "fill": "#ebe7df",
+    "title": "#3a342c",
+    "border": "#8d8475"
+  },
+  "canvasText": "#3a342c",
+  "edgeLabel": {
+    "bg": "#ffffff",
+    "text": "#1e1e1e"
+  }
+}

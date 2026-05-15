@@ -20,10 +20,28 @@ test('lintDiagram: missing-header.mmd flags MISSING_HOUSE_STYLE_HEADER', async (
   assert.equal(findings[0].code, 'MISSING_HOUSE_STYLE_HEADER');
 });
 
+test('lintDiagram: legacy-header.mmd flags LEGACY_HOUSE_STYLE_HEADER warning', async () => {
+  const findings = await lintDiagram(fixture('legacy-header.mmd'));
+  const legacy = findings.find((f) => f.code === 'LEGACY_HOUSE_STYLE_HEADER');
+  assert.ok(legacy, 'expected LEGACY_HOUSE_STYLE_HEADER finding');
+  assert.equal(legacy.severity, 'warning');
+  assert.match(legacy.message, /clusterBkg/);
+  assert.match(legacy.message, /primaryTextColor/);
+});
+
 test('lintDiagram: bad-syntax.mmd flags SYNTAX_ERROR and stops', async () => {
   const findings = await lintDiagram(fixture('bad-syntax.mmd'));
   assert.equal(findings.length, 1);
   assert.equal(findings[0].code, 'SYNTAX_ERROR');
+});
+
+test('lintDiagram: inline-class.mmd flags INLINE_CLASS_NOT_SUPPORTED with fix suggestion', async () => {
+  const findings = await lintDiagram(fixture('inline-class.mmd'));
+  assert.equal(findings.length, 1);
+  assert.equal(findings[0].code, 'INLINE_CLASS_NOT_SUPPORTED');
+  assert.equal(findings[0].severity, 'blocker');
+  assert.match(findings[0].message, /class web sysA/);
+  assert.equal(findings[0].line, 14);
 });
 
 // --- merval syntax constraints ---
@@ -81,10 +99,10 @@ test('lintDiagram: low-contrast.mmd flags LOW_CONTRAST_TEXT and LOW_CONTRAST_DAR
 
 test('lintDiagram: wrong-classname.mmd flags UNAPPROVED_CLASSNAME', async () => {
   const findings = await lintDiagram(fixture('wrong-classname.mmd'));
-  assert.equal(findings.length, 1);
-  assert.equal(findings[0].code, 'UNAPPROVED_CLASSNAME');
-  assert.equal(findings[0].severity, 'warning');
-  assert.match(findings[0].message, /myCustomClass/);
+  const unapproved = findings.find((f) => f.code === 'UNAPPROVED_CLASSNAME');
+  assert.ok(unapproved, 'expected UNAPPROVED_CLASSNAME finding');
+  assert.equal(unapproved.severity, 'warning');
+  assert.match(unapproved.message, /myCustomClass/);
 });
 
 test('lintDiagram: borderline-contrast.mmd flags LOW_CONTRAST_TEXT just below AA', async () => {
@@ -203,32 +221,77 @@ test('walk: still returns explicit file even if its basename is LLM-config', () 
   }
 });
 
+// Set up an isolated copy of the linter under a parent chain that has no
+// node_modules anywhere, then invoke it with the given extra args. Returns
+// the captured stdout and exit code. The work dir is cleaned up by the
+// caller's finally block.
+//
+// Extracted because the merval-not-installed code path needs the same
+// fixture for its structured-output and human-output tests.
+function runWithoutMerval(work, extraArgs = []) {
+  copyFileSync(join(here, 'lint-mermaid.mjs'), join(work, 'lint-mermaid.mjs'));
+  copyFileSync(join(here, 'contrast.mjs'), join(work, 'contrast.mjs'));
+  mkdirSync(join(work, '__fixtures__'));
+  copyFileSync(
+    join(here, '__fixtures__', 'good.mmd'),
+    join(work, '__fixtures__', 'good.mmd'),
+  );
+
+  let stdout = '';
+  let exitCode = 0;
+  try {
+    stdout = execFileSync(
+      'node',
+      [join(work, 'lint-mermaid.mjs'), ...extraArgs, join(work, '__fixtures__', 'good.mmd')],
+      { cwd: work, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] },
+    );
+  } catch (e) {
+    stdout = e.stdout?.toString() ?? '';
+    exitCode = e.status ?? 1;
+  }
+  return { stdout, exitCode };
+}
+
 test('CLI emits MERVAL_NOT_INSTALLED when the package is unresolvable', () => {
+  // Asserts the structured contract via --json so the test does not
+  // depend on terminal wrap behavior (which is a function of the
+  // tmpdir() path length and varies across machines).
   const work = mkdtempSync(join(tmpdir(), 'lint-mermaid-test-'));
   try {
-    copyFileSync(join(here, 'lint-mermaid.mjs'), join(work, 'lint-mermaid.mjs'));
-    copyFileSync(join(here, 'contrast.mjs'), join(work, 'contrast.mjs'));
-    mkdirSync(join(work, '__fixtures__'));
-    copyFileSync(
-      join(here, '__fixtures__', 'good.mmd'),
-      join(work, '__fixtures__', 'good.mmd'),
-    );
-
-    let stdout = '';
-    let exitCode = 0;
-    try {
-      stdout = execFileSync(
-        'node',
-        [join(work, 'lint-mermaid.mjs'), join(work, '__fixtures__', 'good.mmd')],
-        { cwd: work, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] },
-      );
-    } catch (e) {
-      stdout = e.stdout?.toString() ?? '';
-      exitCode = e.status ?? 1;
-    }
-    assert.match(stdout, /MERVAL_NOT_INSTALLED/);
-    assert.match(stdout, /npm install/);
+    const { stdout, exitCode } = runWithoutMerval(work, ['--json']);
     assert.equal(exitCode, 1);
+
+    const report = JSON.parse(stdout);
+    assert.equal(report.status, 'findings');
+    assert.equal(report.blockerCount, 1);
+    assert.equal(report.results.length, 1);
+
+    const finding = report.results[0].findings[0];
+    assert.equal(finding.code, 'MERVAL_NOT_INSTALLED');
+    assert.equal(finding.severity, 'blocker');
+    // Raw (unwrapped) message must contain the actionable command and
+    // point at the directory where it should be run.
+    assert.match(finding.message, /npm install/);
+    assert.ok(
+      finding.message.includes(work),
+      `message should reference the scripts directory, got: ${finding.message}`,
+    );
+  } finally {
+    rmSync(work, { recursive: true, force: true });
+  }
+});
+
+test('CLI human output for MERVAL_NOT_INSTALLED keeps the npm install guidance readable', () => {
+  // The human formatter wraps at ~76 cols, which can split atomic
+  // command strings across lines depending on the absolute path of
+  // the temp dir. The assertion is whitespace-tolerant so it locks in
+  // "the words appear in order" without being coupled to wrap point.
+  const work = mkdtempSync(join(tmpdir(), 'lint-mermaid-test-'));
+  try {
+    const { stdout, exitCode } = runWithoutMerval(work);
+    assert.equal(exitCode, 1);
+    assert.match(stdout, /MERVAL_NOT_INSTALLED/);
+    assert.match(stdout, /npm\s+install/);
   } finally {
     rmSync(work, { recursive: true, force: true });
   }

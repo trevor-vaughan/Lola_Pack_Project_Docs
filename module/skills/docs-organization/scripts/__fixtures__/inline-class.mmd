@@ -9,6 +9,9 @@
   'titleColor': '#7c8ba1',
   'fontFamily': 'system-ui, sans-serif'
 }}}%%
-flowchart TD
-  A[invoke /docs-audit] --> B{is this ok?}
-  B --> C[line one<br/>line two]
+flowchart LR
+  subgraph clients["clients"]
+    web["web SPA"]:::sysA
+    mobile["mobile app"]:::sysA
+  end
+  classDef sysA fill:#2f6dab,color:#ffffff,stroke:#7c8ba1

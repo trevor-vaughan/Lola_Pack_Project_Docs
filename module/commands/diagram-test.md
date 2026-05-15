@@ -46,13 +46,34 @@ that's ambiguous, ask the user which to use. Every `scripts/...` and
    - If `$ARGUMENTS` is non-empty, use those paths.
    - Otherwise, lint `README.md` and everything under `docs/` (except
      `docs/superpowers/`).
-3. Run `node $SKILL_DIR/scripts/lint-mermaid.mjs <targets>`.
+3. Run `node $SKILL_DIR/scripts/lint-mermaid.mjs --json <targets>`. The
+   `--json` flag returns structured output for parsing; without it, the
+   script emits a human-readable text report (useful when the user is
+   running the script directly, but harder to parse here).
 4. Parse the JSON output. Render findings to the user grouped by file,
    showing the rule code, message, and (where applicable) the line number
    from the source.
 5. **Do not auto-fix.** Suggest /docs-update for fixable findings (missing
    house-style header, unapproved classname when the user wants the palette
    colors); manual fix for contrast and syntax errors.
+
+### Optional rendering
+
+If the user asks for visual proof (e.g., "render and show me these
+diagrams"), use `mmdc` (the mermaid CLI) to produce PNGs. **Always pass
+`--cssFile $SKILL_DIR/reference/palettes/er-overrides.css`** — this CSS
+overrides mermaid's hardcoded `rgba(0,0,0,0.5)` label background that
+otherwise makes ER edge labels invisible on dark page backgrounds. Render
+against both `white` and `#1e1e1e` for any palette except Parchment
+(light-bg only):
+
+```
+mmdc -i <file>.mmd -o <file>.light.png -b white --cssFile $SKILL_DIR/reference/palettes/er-overrides.css
+mmdc -i <file>.mmd -o <file>.dark.png  -b "#1e1e1e" --cssFile $SKILL_DIR/reference/palettes/er-overrides.css
+```
+
+The four palette JSONs live at `$SKILL_DIR/reference/palettes/{solar,
+federation,citrus,parchment}.json` for reference.
 
 ## Stop conditions
 

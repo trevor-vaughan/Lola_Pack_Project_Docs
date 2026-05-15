@@ -1,6 +1,12 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+# Isolate from the host's git config (commit.gpgsign, core.hooksPath,
+# init.defaultBranch, safe.directory, etc.) so tests run identically on
+# every dev machine and CI runner. Requires git ≥ 2.32.
+export GIT_CONFIG_GLOBAL=/dev/null
+export GIT_CONFIG_SYSTEM=/dev/null
+
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 SCRIPT="$HERE/check-staleness.sh"
 

@@ -16,13 +16,21 @@ afterward to act on them.
 
 ```mermaid
 %%{init: {'theme': 'base', 'themeVariables': {
-  'primaryColor': '#3e6fa0',
-  'primaryTextColor': '#ffffff',
+  'primaryColor': '#2f6dab',
+  'primaryTextColor': '#1e1e1e',
   'primaryBorderColor': '#7c8ba1',
   'lineColor': '#7c8ba1',
-  'edgeLabelBackground': '#f5f5f5',
+  'edgeLabelBackground': '#eef2f8',
+  'tertiaryColor': 'transparent',
+  'tertiaryTextColor': '#7c8ba1',
+  'tertiaryBorderColor': '#7c8ba1',
+  'clusterBkg': 'transparent',
+  'clusterBorder': '#7c8ba1',
+  'titleColor': '#7c8ba1',
+  'noteBkgColor': '#eef2f8',
+  'noteTextColor': '#1e1e1e',
   'fontFamily': 'system-ui, sans-serif'
-}}}%%
+}, 'themeCSS': '.node .nodeLabel{color:#ffffff!important;fill:#ffffff!important;}'}}%%
 flowchart TD
   start["invoke /docs-audit"]
   start --> l1["Lane 1: check-structure.sh"]

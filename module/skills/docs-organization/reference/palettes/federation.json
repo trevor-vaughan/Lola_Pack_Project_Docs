@@ -1,0 +1,22 @@
+{
+  "name": "Federation",
+  "description": "Cool/balanced — refined original palette with outlined clusters and mid-tone canvas text. Works on both light and dark backgrounds.",
+  "nodes": {
+    "sysA": { "fill": "#3e6fa0", "text": "#ffffff" },
+    "sysB": { "fill": "#3a8054", "text": "#ffffff" },
+    "sysC": { "fill": "#a55726", "text": "#ffffff" },
+    "sysD": { "fill": "#7457b8", "text": "#ffffff" },
+    "sysE": { "fill": "#2d747e", "text": "#ffffff" },
+    "sysF": { "fill": "#5a6a7e", "text": "#ffffff" }
+  },
+  "cluster": {
+    "fill": "transparent",
+    "title": "#7c8ba1",
+    "border": "#7c8ba1"
+  },
+  "canvasText": "#7c8ba1",
+  "edgeLabel": {
+    "bg": "#f5f5f5",
+    "text": "#1e1e1e"
+  }
+}

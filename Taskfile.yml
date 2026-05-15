@@ -97,3 +97,24 @@ tasks:
     desc: Lint every mermaid diagram in the pack's own project docs
     cmds:
       - node module/skills/docs-organization/scripts/lint-mermaid.mjs module/ README.md
+
+  test:diagrams:
+    desc: Lint and render every mermaid fixture under tests/diagrams/ (light + dark backgrounds, output in .test-output/diagrams/)
+    cmds:
+      - mkdir -p .test-output/diagrams
+      - node module/skills/docs-organization/scripts/lint-mermaid.mjs tests/diagrams/ > .test-output/diagrams/lint.json || true
+      - bash {{.ROOT_DIR}}/scripts/render-diagrams.sh {{.ROOT_DIR}}/tests/diagrams {{.ROOT_DIR}}/.test-output/diagrams {{.ROOT_DIR}}/module/skills/docs-organization/reference/palettes/er-overrides.css
+      - cat .test-output/diagrams/manifest.txt
+
+  render:
+    desc: 'Render a single .mmd file to PNG against light + dark backgrounds with the skill''s CSS override applied. Usage: task render -- path/to/diagram.mmd'
+    cmds:
+      - mkdir -p .test-output/render
+      - mmdc -i {{.CLI_ARGS}} -o .test-output/render/{{base .CLI_ARGS | replace ".mmd" ""}}.light.png -b white --cssFile module/skills/docs-organization/reference/palettes/er-overrides.css --quiet
+      - mmdc -i {{.CLI_ARGS}} -o .test-output/render/{{base .CLI_ARGS | replace ".mmd" ""}}.dark.png  -b "#1e1e1e" --cssFile module/skills/docs-organization/reference/palettes/er-overrides.css --quiet
+      - 'echo "Rendered to .test-output/render/"'
+
+  palette:
+    desc: 'Swap palette on an existing .mmd file. Usage: task palette -- <solar|federation|citrus|parchment> path/to/diagram.mmd. Writes to stdout — redirect to overwrite.'
+    cmds:
+      - bash {{.ROOT_DIR}}/module/skills/docs-organization/scripts/swap-palette.sh {{.CLI_ARGS}}

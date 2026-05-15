@@ -1,152 +1,170 @@
 # Mermaid house style
 
-Every diagram in this project must begin with the required init header and
-use `classDef` entries drawn from the approved palette below. `/diagram-test`
-enforces these rules.
+Every diagram begins with a palette init header and uses `classDef` entries
+from the approved palette. `/diagram-test` enforces this.
 
-## When to use a diagram
+## Pick a palette
 
-Diagrams clarify concepts that prose alone obscures. Reach for one when you
-catch yourself writing any of these:
+| Palette | Mood | Cluster shape | Backgrounds |
+|---------|------|---------------|-------------|
+| **Solar** (default) | Cool jewel tones (sapphire, emerald, amethyst, teal, indigo, slate) | Outlined transparent | Light + dark |
+| **Federation** | Cool balanced (steel blue, forest green, terracotta, violet, deep teal, slate) | Outlined transparent | Light + dark |
+| **Citrus** | Warm earth (terracotta, olive, amber, burgundy, sand, slate) | Outlined transparent | Light + dark |
+| **Parchment** | Federation colors + filled beige clusters | Filled pale neutral | **Light only** |
 
-| If you're describing… | Use a… | Why |
+Palette JSONs live next to this file in `palettes/`. ER diagrams also need
+`palettes/er-overrides.css` at render time — `/diagram-test` applies it
+automatically; direct `mmdc` users pass `--cssFile`.
+
+## When to reach for a diagram
+
+| Describing… | Use… | Why |
 |---|---|---|
-| How subsystems connect to each other | `flowchart` (or C4 component) | A node-and-edge picture is faster than a paragraph naming each connection |
-| A multi-step interaction between actors over time | `sequenceDiagram` | Time-ordered arrows expose causality that prose hides |
-| A state that transitions through phases | `stateDiagram-v2` | Visible cycles and dead ends that lists of states never show |
-| A branching decision the reader must follow | `flowchart` with decision nodes | The branches are the point — prose linearizes them |
-| Data shape moving through stages of a pipeline | `flowchart LR` with annotated edges | Shape-at-each-stage is easier to track than chained sentences |
-| A relationship between entities or models | `erDiagram` | One-to-many vs. many-to-many is a diagram's natural domain |
+| How subsystems connect | `flowchart` (or C4) | A node-and-edge picture beats a paragraph naming connections |
+| Multi-actor interaction over time | `sequenceDiagram` | Time-ordered arrows expose causality |
+| State transitioning through phases | `stateDiagram-v2` | Cycles and dead ends become visible |
+| A branching decision | `flowchart` with decision nodes | Branches are the point — prose linearizes them |
+| Data flowing through pipeline stages | `flowchart LR` with annotated edges | Shape-at-each-stage is hard to track in prose |
+| Entity / model relationships | `erDiagram` | One-to-many vs. many-to-many is a diagram's domain |
 
-A diagram is not required for: a single linear sequence (use a numbered
-list), a fixed list of values (use a table), an isolated concept (use
-prose). Don't draw a diagram to prove you can.
+Skip the diagram for: a single linear sequence (use a numbered list), a
+fixed list (use a table), an isolated concept (use prose).
 
-When you do reach for one, follow the house style below so the diagram
-stays legible regardless of light or dark page backgrounds.
+## Init header (Solar — the default)
 
-## Required init header
-
-Paste this at the top of every `.mmd` file and every fenced ```mermaid block:
+Paste this at the top of every `.mmd` file and every fenced ` ```mermaid `
+block:
 
 ```
 %%{init: {'theme': 'base', 'themeVariables': {
-  'primaryColor': '#3e6fa0',
-  'primaryTextColor': '#ffffff',
+  'primaryColor': '#2f6dab',
+  'primaryTextColor': '#1e1e1e',
   'primaryBorderColor': '#7c8ba1',
   'lineColor': '#7c8ba1',
-  'edgeLabelBackground': '#f5f5f5',
+  'edgeLabelBackground': '#eef2f8',
+  'tertiaryColor': 'transparent',
+  'tertiaryTextColor': '#7c8ba1',
+  'tertiaryBorderColor': '#7c8ba1',
+  'clusterBkg': 'transparent',
+  'clusterBorder': '#7c8ba1',
+  'titleColor': '#7c8ba1',
+  'noteBkgColor': '#eef2f8',
+  'noteTextColor': '#1e1e1e',
   'fontFamily': 'system-ui, sans-serif'
-}}}%%
+}, 'themeCSS': '.node .nodeLabel{color:#ffffff!important;fill:#ffffff!important;}'}}%%
 ```
+
+Then for any nodes you want palette-colored, add classDefs at the bottom
+(only those used):
+
+```
+  classDef sysA fill:#2f6dab,color:#ffffff,stroke:#7c8ba1
+  classDef sysB fill:#1d7848,color:#ffffff,stroke:#7c8ba1
+  classDef sysC fill:#7457b8,color:#ffffff,stroke:#7c8ba1
+  classDef sysD fill:#2d747e,color:#ffffff,stroke:#7c8ba1
+  classDef sysE fill:#4d68c4,color:#ffffff,stroke:#7c8ba1
+  classDef sysF fill:#5c6a82,color:#ffffff,stroke:#7c8ba1
+```
+
+Apply with `class <node1>,<node2> <className>`. The inline form
+`<node>:::<className>` is rejected by the linter for nodes with explicit
+shapes.
+
+## Switching palette
+
+Each non-default palette overrides only the colors. Take the Solar header
+above and substitute the values from this table:
+
+| Variable               | Solar       | Federation  | Citrus      | Parchment   |
+|------------------------|-------------|-------------|-------------|-------------|
+| `primaryColor`         | `#2f6dab`   | `#3e6fa0`   | `#a55726`   | `#3e6fa0`   |
+| `primaryBorderColor`   | `#7c8ba1`   | `#7c8ba1`   | `#9a8770`   | `#8d8475`   |
+| `lineColor`            | `#7c8ba1`   | `#7c8ba1`   | `#9a8770`   | `#8d8475`   |
+| `edgeLabelBackground`  | `#eef2f8`   | `#f5f5f5`   | `#f5f0e8`   | `#ffffff`   |
+| `tertiaryTextColor`    | `#7c8ba1`   | `#7c8ba1`   | `#9a8770`   | `#3a342c`   |
+| `tertiaryBorderColor`  | `#7c8ba1`   | `#7c8ba1`   | `#9a8770`   | `#8d8475`   |
+| `clusterBkg`           | transparent | transparent | transparent | `#ebe7df`   |
+| `clusterBorder`        | `#7c8ba1`   | `#7c8ba1`   | `#9a8770`   | `#8d8475`   |
+| `titleColor`           | `#7c8ba1`   | `#7c8ba1`   | `#9a8770`   | `#3a342c`   |
+| `noteBkgColor`         | `#eef2f8`   | `#f5f5f5`   | `#f5f0e8`   | `#ffffff`   |
+| `tertiaryColor`        | transparent | transparent | transparent | `#ebe7df`   |
+
+classDef fills:
+
+| Class | Solar      | Federation | Citrus     | Parchment (= Federation) |
+|-------|------------|------------|------------|--------------------------|
+| sysA  | `#2f6dab`  | `#3e6fa0`  | `#a55726`  | `#3e6fa0`                |
+| sysB  | `#1d7848`  | `#3a8054`  | `#5f7a23`  | `#3a8054`                |
+| sysC  | `#7457b8`  | `#a55726`  | `#9b6320`  | `#a55726`                |
+| sysD  | `#2d747e`  | `#7457b8`  | `#a64a72`  | `#7457b8`                |
+| sysE  | `#4d68c4`  | `#2d747e`  | `#8e6e3a`  | `#2d747e`                |
+| sysF  | `#5c6a82`  | `#5a6a7e`  | `#5a6a7e`  | `#5a6a7e`                |
+
+Node text is `#ffffff` (white) in every palette. The `themeCSS` snippet in
+the init header forces white text on default (non-classDef'd) nodes so
+diagrams render correctly without per-node classDefs.
 
 ## Syntax constraints
 
-`lint-mermaid.mjs` parses diagrams with merval, whose grammar is a strict
-subset of what the mermaid live editor accepts. The following rules are
-the difference — every diagram in this project must follow them, even if
-your browser renders looser syntax cleanly:
+The linter uses merval, a strict subset of mermaid's grammar:
 
-1. **Quote labels containing `:`, `,`, `(`, or `)`.** Use double quotes
-   inside the node delimiter:
-   - `B["Lane 1: structural"]` not `B[Lane 1: structural]`
-   - `D{"matches, or not?"}` not `D{matches, or not?}`
-   - `E["pipeline (stage 2)"]` not `E[pipeline (stage 2)]`
-2. **Stadium shape `([text])` is not supported.** Use rectangles
-   `[text]` or rounded rectangles `(text)` instead. Quoting does not
-   help — the shape itself is unrecognized.
-3. **These work unquoted:** `/` slashes, `?` question marks, `<br/>`
-   line breaks, hyphens, ampersands.
+1. **Quote labels containing `:`, `,`, `(`, or `)`** — `B["Lane 1: structural"]` not `B[Lane 1: structural]`.
+2. **Stadium shape `([text])` is not supported.** Use `[text]` or `(text)`.
+3. **Inline class `node["label"]:::sysX` is rejected** for nodes with explicit shapes. Use `class node1,node2 sysA` instead.
+4. `/`, `?`, `<br/>`, hyphens, and ampersands work unquoted.
 
-Rule of thumb: if a label contains any of the four characters in rule 1,
-wrap the whole label in `"…"`. Cost is negligible; debugging a
-`SYNTAX_ERROR` mid-commit is not.
+## ER edge labels — known mermaid quirk
 
-## Approved palette
+Mermaid hardcodes `.labelBkg { background-color: rgba(0, 0, 0, 0.5); }` in
+its emitted SVG for ER relationship labels, ignoring theme variables.
+`palettes/er-overrides.css` restores legibility by forcing a light pill
+background with dark text. `/diagram-test` applies it via `--cssFile`
+automatically.
 
-Each class is a fill+text pair, chosen so that:
-
-- Text vs fill ≥ 4.5:1 (WCAG AA — text always legible regardless of background)
-- Fill vs `#ffffff` (light bg) ≥ 3.0:1 (WCAG threshold for non-text graphics)
-- Fill vs `#1e1e1e` (dark bg) ≥ 3.0:1 (same)
-
-These thresholds are the geometric maximum: requiring fills to clear AA
-(4.5:1) against *both* light and dark backgrounds is impossible — those
-constraints push the fill's luminance in opposite directions. The 3.0:1
-threshold for fill-on-bg is WCAG's official criterion for graphical objects.
-
-| Class  | Purpose          | Fill      | Text      |
-|--------|------------------|-----------|-----------|
-| sysA   | first subsystem  | `#3e6fa0` | `#ffffff` |
-| sysB   | second subsystem | `#3a8054` | `#ffffff` |
-| sysC   | third subsystem  | `#a55726` | `#ffffff` |
-| sysD   | fourth subsystem | `#7457b8` | `#ffffff` |
-| sysE   | fifth subsystem  | `#2d747e` | `#ffffff` |
-| sysF   | sixth subsystem  | `#5a6a7e` | `#ffffff` |
-
-Assign nodes to a class with `class <node1>,<node2> <className>` or
-`<node>:::<className>`.
-
-## Worked examples
-
-### Flowchart
+## Worked example
 
 ```mermaid
 %%{init: {'theme': 'base', 'themeVariables': {
-  'primaryColor': '#3e6fa0',
-  'primaryTextColor': '#ffffff',
+  'primaryColor': '#2f6dab',
+  'primaryTextColor': '#1e1e1e',
   'primaryBorderColor': '#7c8ba1',
   'lineColor': '#7c8ba1',
-  'edgeLabelBackground': '#f5f5f5',
+  'edgeLabelBackground': '#eef2f8',
+  'clusterBkg': 'transparent',
+  'clusterBorder': '#7c8ba1',
+  'titleColor': '#7c8ba1',
   'fontFamily': 'system-ui, sans-serif'
-}}}%%
+}, 'themeCSS': '.node .nodeLabel{color:#ffffff!important;fill:#ffffff!important;}'}}%%
 flowchart LR
-  User -->|request| API
-  API -->|read| DB
-  classDef sysA fill:#3e6fa0,color:#ffffff,stroke:#7c8ba1
-  classDef sysB fill:#3a8054,color:#ffffff,stroke:#7c8ba1
+  subgraph edgetier["edge tier"]
+    User --> API
+  end
+  subgraph datatier["data tier"]
+    API --> DB
+  end
+  classDef sysA fill:#2f6dab,color:#ffffff,stroke:#7c8ba1
+  classDef sysB fill:#1d7848,color:#ffffff,stroke:#7c8ba1
   class User,API sysA
   class DB sysB
 ```
 
-### Sequence
+## Why this design
 
-```mermaid
-%%{init: {'theme': 'base', 'themeVariables': {
-  'primaryColor': '#3e6fa0',
-  'primaryTextColor': '#ffffff',
-  'primaryBorderColor': '#7c8ba1',
-  'lineColor': '#7c8ba1',
-  'edgeLabelBackground': '#f5f5f5',
-  'fontFamily': 'system-ui, sans-serif'
-}}}%%
-sequenceDiagram
-  participant U as User
-  participant A as API
-  participant D as DB
-  U->>A: request
-  A->>D: query
-  D-->>A: rows
-  A-->>U: response
-```
+Mermaid renders inline in markdown viewers and chat panes that may use
+either light or dark backgrounds. The four palettes land node fills in the
+narrow WCAG luminance band `[0.13, 0.183]` — the only range where a fill
+clears 3:1 contrast against both `#ffffff` and `#1e1e1e`. White node text
+on those fills clears 4.5:1 (AA). Mid-tone canvas/cluster text clears 3:1
+(AA Large) on both backgrounds.
 
-## Why these rules
-
-Mermaid renders inline in markdown viewers and assistant chat panes that may
-use either light or dark page backgrounds. Without explicit colors, mermaid's
-default theme produces near-white nodes that vanish on a light background and
-washed-out text that vanishes on a dark one.
-
-The palette here lands every fill in the narrow ~[0.13, 0.183] WCAG luminance
-band, which is the only range where a single color clears 3.0:1 contrast
-against *both* light (`#ffffff`) and dark (`#1e1e1e`) reference backgrounds.
-White text on those fills clears the WCAG AA 4.5:1 threshold for text
-legibility. Going to AAA (7:1) for text would shrink the viable band to
-empty — those constraints push the fill's luminance in opposite directions.
+Setting `primaryTextColor: '#1e1e1e'` (dark) keeps edge labels, axis
+labels, ER attributes, sankey/radar/quadrant text legible. The `themeCSS`
+override then forces white text on node fills so default nodes still read
+correctly without a classDef.
 
 ## Opting out
 
-If a diagram needs a one-off color outside the palette (rare — accessibility
-guarantees go away), add `<!-- lint-mermaid:allow-classname=<name> -->` on
-the line immediately before the offending `classDef`. The check still runs
-on contrast; only the approved-name rule is suppressed.
+For a one-off color outside the palette, add
+`<!-- lint-mermaid:allow-classname=<name> -->` on the line immediately
+before the offending `classDef`. Contrast still runs; only the
+approved-name check is suppressed.

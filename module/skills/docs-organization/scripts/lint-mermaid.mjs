@@ -43,6 +43,29 @@ export function extractInitBlock(source) {
   return m ? m[0] : null;
 }
 
+// Detect `node["label"]:::className` — inline class assignment on a node
+// with an explicit shape. Merval rejects this even though the mermaid
+// live editor accepts it. Returns the first occurrence with line/column.
+export function findInlineClassUse(source) {
+  const lines = source.split('\n');
+  // Pattern: identifier + (shape-bracket) + label + close-bracket + :::class
+  // Shapes: [text], (text), {text}, [[text]], ((text)), etc.
+  const re = /(\w+)[\[\(\{].*?[\]\)\}]:::([A-Za-z_]\w*)/;
+  for (let i = 0; i < lines.length; i++) {
+    const m = lines[i].match(re);
+    if (m) {
+      return {
+        line: i + 1,
+        column: m.index + 1,
+        match: m[0],
+        nodeId: m[1],
+        className: m[2],
+      };
+    }
+  }
+  return null;
+}
+
 export function extractClassDefs(source) {
   const out = [];
   const re = /^\s*classDef\s+(\w+)[ \t]+(.+)$/gm;
@@ -76,6 +99,25 @@ export async function lintDiagram(source) {
   const v = validateMermaid(source);
   if (!v.isValid) {
     const err = v.errors?.[0];
+    // Specialized detection: inline `:::sysX` on a node with an explicit
+    // shape is a common gotcha — merval rejects it but the error message
+    // ("Adjacent nodes 'web' and 'sysA'…") doesn't hint at the cause.
+    // Surface a dedicated finding pointing at the fix.
+    const inlineClass = findInlineClassUse(source);
+    if (inlineClass) {
+      findings.push({
+        code: 'INLINE_CLASS_NOT_SUPPORTED',
+        severity: 'blocker',
+        line: inlineClass.line,
+        column: inlineClass.column,
+        message:
+          `Inline class assignment on a node with an explicit shape ` +
+          `(${inlineClass.match}) is rejected by the linter. Declare the ` +
+          `node first, then assign with a separate \`class\` statement: ` +
+          `\`class ${inlineClass.nodeId} ${inlineClass.className}\`.`,
+      });
+      return findings;
+    }
     if (!err) {
       findings.push({
         code: 'SYNTAX_ERROR',
@@ -95,7 +137,8 @@ export async function lintDiagram(source) {
     return findings;
   }
 
-  if (!extractInitBlock(source)) {
+  const initBlock = extractInitBlock(source);
+  if (!initBlock) {
     findings.push({
       code: 'MISSING_HOUSE_STYLE_HEADER',
       severity: 'blocker',
@@ -103,6 +146,27 @@ export async function lintDiagram(source) {
         'Diagram is missing the %%{init}%% house-style header. See ' +
         'module/skills/docs-organization/reference/mermaid-house-style.md.',
     });
+  } else {
+    // Warn if the header looks like a pre-palette-update legacy header.
+    // Required signals (in any one of the 4 current palettes): clusterBkg
+    // and primaryTextColor set to a non-white value. The legacy header set
+    // primaryTextColor to '#ffffff' (which makes chart titles, axis labels,
+    // sankey/radar node labels, ER attributes, and edge labels invisible).
+    const hasClusterBkg = /'clusterBkg'\s*:/.test(initBlock);
+    const whitePrimaryText = /'primaryTextColor'\s*:\s*'#(fff|ffffff)'/i.test(initBlock);
+    if (!hasClusterBkg || whitePrimaryText) {
+      const reasons = [];
+      if (!hasClusterBkg) reasons.push("missing 'clusterBkg' (subgraph cluster fills will use mermaid's brown default)");
+      if (whitePrimaryText) reasons.push("'primaryTextColor' is white — chart titles, axis labels, ER attributes, and edge labels will be invisible on light backgrounds");
+      findings.push({
+        code: 'LEGACY_HOUSE_STYLE_HEADER',
+        severity: 'warning',
+        message:
+          'Init header is the legacy form (' + reasons.join('; ') +
+          '). Replace with one of the four palette headers — see ' +
+          'reference/mermaid-house-style.md.',
+      });
+    }
   }
 
   for (const def of extractClassDefs(source)) {
@@ -187,10 +251,42 @@ export function walk(target) {
   return out;
 }
 
+function formatHuman(results, blockerCount) {
+  const warningCount = results.reduce(
+    (acc, r) => acc + r.findings.filter((f) => f.severity === 'warning').length,
+    0,
+  );
+  if (results.length === 0) {
+    return 'lint-mermaid: ok — no findings.\n';
+  }
+  const lines = [];
+  for (const r of results) {
+    lines.push(`${r.file}${r.blockIndex > 0 ? ` (block ${r.blockIndex})` : ''}:`);
+    for (const f of r.findings) {
+      const where = f.line ? ` line ${f.line}${f.column ? `:${f.column}` : ''}` : '';
+      const tag = f.severity === 'blocker' ? '✖' : '⚠';
+      lines.push(`  ${tag} ${f.code}${where}`);
+      // Wrap message at ~80 cols, indented under the tag.
+      for (const chunk of f.message.match(/.{1,76}(\s|$)|.{1,76}/g) ?? [f.message]) {
+        lines.push(`    ${chunk.trim()}`);
+      }
+      if (f.suggestion) lines.push(`    suggestion: ${f.suggestion}`);
+    }
+    lines.push('');
+  }
+  const parts = [];
+  if (blockerCount) parts.push(`${blockerCount} blocker${blockerCount === 1 ? '' : 's'}`);
+  if (warningCount) parts.push(`${warningCount} warning${warningCount === 1 ? '' : 's'}`);
+  lines.push(`lint-mermaid: ${parts.join(', ')} across ${results.length} file${results.length === 1 ? '' : 's'}.`);
+  return lines.join('\n') + '\n';
+}
+
 async function main(argv) {
-  const targets = argv.slice(2);
+  const args = argv.slice(2);
+  const json = args.includes('--json');
+  const targets = args.filter((a) => a !== '--json');
   if (targets.length === 0) {
-    console.error('usage: lint-mermaid.mjs <file-or-dir>...');
+    console.error('usage: lint-mermaid.mjs [--json] <file-or-dir>...');
     process.exit(2);
   }
 
@@ -213,19 +309,25 @@ async function main(argv) {
     0,
   );
 
-  process.stdout.write(
-    JSON.stringify(
-      {
-        status: results.length === 0 ? 'ok' : 'findings',
-        blockerCount,
-        results,
-      },
-      null,
-      2,
-    ) + '\n',
-  );
+  if (json) {
+    process.stdout.write(
+      JSON.stringify(
+        {
+          status: results.length === 0 ? 'ok' : 'findings',
+          blockerCount,
+          results,
+        },
+        null,
+        2,
+      ) + '\n',
+    );
+  } else {
+    process.stdout.write(formatHuman(results, blockerCount));
+  }
   process.exit(blockerCount > 0 ? 1 : 0);
 }
+
+export { formatHuman };
 
 if (import.meta.url === `file://${process.argv[1]}`) {
   main(process.argv).catch((e) => {

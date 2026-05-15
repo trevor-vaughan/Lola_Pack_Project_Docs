@@ -61,18 +61,26 @@ when other diagram types fit better.
 <!-- starter mermaid block -->
 ```mermaid
 %%{init: {'theme': 'base', 'themeVariables': {
-  'primaryColor': '#3e6fa0',
-  'primaryTextColor': '#ffffff',
+  'primaryColor': '#2f6dab',
+  'primaryTextColor': '#1e1e1e',
   'primaryBorderColor': '#7c8ba1',
   'lineColor': '#7c8ba1',
-  'edgeLabelBackground': '#f5f5f5',
+  'edgeLabelBackground': '#eef2f8',
+  'tertiaryColor': 'transparent',
+  'tertiaryTextColor': '#7c8ba1',
+  'tertiaryBorderColor': '#7c8ba1',
+  'clusterBkg': 'transparent',
+  'clusterBorder': '#7c8ba1',
+  'titleColor': '#7c8ba1',
+  'noteBkgColor': '#eef2f8',
+  'noteTextColor': '#1e1e1e',
   'fontFamily': 'system-ui, sans-serif'
-}}}%%
+}, 'themeCSS': '.node .nodeLabel{color:#ffffff!important;fill:#ffffff!important;}'}}%%
 flowchart LR
   User -->|request| API
   API -->|read/write| DB
-  classDef sysA fill:#3e6fa0,color:#ffffff,stroke:#7c8ba1
-  classDef sysB fill:#3a8054,color:#ffffff,stroke:#7c8ba1
+  classDef sysA fill:#2f6dab,color:#ffffff,stroke:#7c8ba1
+  classDef sysB fill:#1d7848,color:#ffffff,stroke:#7c8ba1
   class User,API sysA
   class DB sysB
 ```

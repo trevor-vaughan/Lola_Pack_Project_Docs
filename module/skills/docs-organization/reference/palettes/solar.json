@@ -1,0 +1,22 @@
+{
+  "name": "Solar",
+  "description": "Cool jewel tones — sapphire, emerald, amethyst, teal, indigo, slate. For vivid presentations. Outlined clusters, cross-background.",
+  "nodes": {
+    "sysA": { "fill": "#2f6dab", "text": "#ffffff" },
+    "sysB": { "fill": "#1d7848", "text": "#ffffff" },
+    "sysC": { "fill": "#7457b8", "text": "#ffffff" },
+    "sysD": { "fill": "#2d747e", "text": "#ffffff" },
+    "sysE": { "fill": "#4d68c4", "text": "#ffffff" },
+    "sysF": { "fill": "#5c6a82", "text": "#ffffff" }
+  },
+  "cluster": {
+    "fill": "transparent",
+    "title": "#7c8ba1",
+    "border": "#7c8ba1"
+  },
+  "canvasText": "#7c8ba1",
+  "edgeLabel": {
+    "bg": "#eef2f8",
+    "text": "#1e1e1e"
+  }
+}

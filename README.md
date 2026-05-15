@@ -66,6 +66,28 @@ In a project that already has the pack installed:
 - **For the lola pack format:** see https://lobstertrap.org/lola/
 - **For MADR:** see https://adr.github.io/madr/
 
+## Diagram palettes
+
+Four contrast-validated mermaid palettes ship with the skill:
+
+- **Solar** (default) — cool jewel tones, outlined clusters, both light and dark backgrounds
+- **Federation** — cool balanced, outlined clusters, both backgrounds
+- **Citrus** — warm earth tones, outlined clusters, both backgrounds
+- **Parchment** — filled beige clusters for high-impact light-bg rendering
+
+Every palette covers every mermaid diagram type (flowchart, sequence,
+class, state, ER, journey, gantt, pie, sankey, gitgraph, mindmap,
+timeline, xychart, block, kanban, packet, quadrant, requirement, C4,
+architecture, radar). See
+`module/skills/docs-organization/reference/mermaid-house-style.md` for
+templates and the deltas table for switching between them. Two
+convenience targets:
+
+```bash
+task render -- path/to/diagram.mmd            # render to PNG (light + dark)
+task palette -- citrus path/to/diagram.mmd    # swap palette on an existing file
+```
+
 ## Conventions enforced
 
 1. Top-level `README.md` always self-sufficient for basic user onboarding.

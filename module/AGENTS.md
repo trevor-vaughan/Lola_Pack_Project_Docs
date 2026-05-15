@@ -12,7 +12,11 @@ behavior is reached through an explicit slash command.
   staleness, and content drift. `/docs-update` applies fixes
   interactively.
 - **Authoring diagrams:** `/diagram-test` validates every mermaid diagram
-  against the house style (syntax, init header, palette, contrast).
+  against the house style (syntax, init header, palette, contrast). Four
+  contrast-validated palettes ship with the skill — Solar (default),
+  Federation, Citrus, Parchment. `task render -- file.mmd` renders any
+  diagram with the skill's CSS overrides applied; `task palette -- name
+  file.mmd` swaps a diagram to a different palette.
 - **Recording decisions:** `/adr-new <title>` drafts an MADR-format
   Architectural Decision Record. `/adr-review <NNNN>` runs an
   independent rubric pass via a context-isolated subagent.
@@ -33,8 +37,9 @@ The skills are independent. Use one without the other if you prefer.
 2. Developer documentation lives under `docs/dev/`.
 3. `docs/superpowers/` is in `.gitignore` and never committed.
 4. ADRs live in `docs/dev/adr/` (or `docs/adr/` for legacy layouts).
-5. Every mermaid diagram begins with the required `%%{init}%%` header and
-   uses palette classes (`sysA` … `sysF`, `edgeLabel`) with WCAG-verified
+5. Every mermaid diagram begins with the required `%%{init}%%` header
+   from one of the four shipped palettes (Solar is the default) and uses
+   palette classes (`sysA` … `sysF`, `edgeLabel`) with WCAG-verified
    contrast.
 
 ## Requirements

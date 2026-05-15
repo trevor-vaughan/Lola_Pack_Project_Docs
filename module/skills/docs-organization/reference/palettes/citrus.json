@@ -1,0 +1,22 @@
+{
+  "name": "Citrus",
+  "description": "Warm earth tones — terracotta, olive, amber, burgundy, sand, slate. For projects with a warm aesthetic. Outlined clusters, cross-background.",
+  "nodes": {
+    "sysA": { "fill": "#a55726", "text": "#ffffff" },
+    "sysB": { "fill": "#5f7a23", "text": "#ffffff" },
+    "sysC": { "fill": "#9b6320", "text": "#ffffff" },
+    "sysD": { "fill": "#a64a72", "text": "#ffffff" },
+    "sysE": { "fill": "#8e6e3a", "text": "#ffffff" },
+    "sysF": { "fill": "#5a6a7e", "text": "#ffffff" }
+  },
+  "cluster": {
+    "fill": "transparent",
+    "title": "#9a8770",
+    "border": "#9a8770"
+  },
+  "canvasText": "#9a8770",
+  "edgeLabel": {
+    "bg": "#f5f0e8",
+    "text": "#1e1e1e"
+  }
+}

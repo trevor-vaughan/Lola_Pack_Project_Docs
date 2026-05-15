@@ -1,0 +1,31 @@
+/* ER diagram edge labels — mermaid hardcodes the label background as
+   rgba(0,0,0,0.5) and ignores relationLabelBackground / edgeLabelBackground
+   theme variables. We override the relevant SVG classes so labels remain
+   legible on both light and dark page backgrounds.
+
+   Targeted classes (from inspecting mermaid v11 generated SVG):
+     .relationshipLabelBox rect — the dim translucent backdrop
+     .labelBkg                  — the text pill background
+     .edgeLabel .label rect     — flowchart/sequence variant
+     .edgeLabel .label text     — text inside edge labels
+*/
+.relationshipLabelBox rect {
+  fill: #f5f5f5 !important;
+  opacity: 1 !important;
+  stroke: #7c8ba1 !important;
+}
+.labelBkg {
+  background-color: #f5f5f5 !important;
+  fill: #f5f5f5 !important;
+}
+foreignObject .labelBkg {
+  background-color: #f5f5f5 !important;
+}
+.edgeLabel .label rect {
+  fill: #f5f5f5 !important;
+}
+.edgeLabel .label text,
+.edgeLabel text,
+.relationshipLabel text {
+  fill: #1e1e1e !important;
+}

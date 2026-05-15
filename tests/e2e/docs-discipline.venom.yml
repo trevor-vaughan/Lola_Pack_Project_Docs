@@ -7,7 +7,16 @@ testcases:
       script: |
         set -e
         WORKDIR=$(mktemp -d -t docs-discipline-e2e.XXXXXX)
-        echo "WORKDIR=$WORKDIR" >> /tmp/docs-discipline-e2e.env
+        # Persist both the workdir and the git-config-isolation vars so
+        # every subsequent step that sources this env file ignores the
+        # host's global/system git config. Prevents pollution from
+        # commit.gpgsign, init.defaultBranch, core.hooksPath, etc.
+        cat > /tmp/docs-discipline-e2e.env <<ENV
+        export WORKDIR="$WORKDIR"
+        export GIT_CONFIG_GLOBAL=/dev/null
+        export GIT_CONFIG_SYSTEM=/dev/null
+        ENV
+        source /tmp/docs-discipline-e2e.env
         cd "$WORKDIR"
         git init -q
         git config user.email "test@test"
@@ -88,7 +97,7 @@ testcases:
       script: |
         source /tmp/docs-discipline-e2e.env
         cd "$WORKDIR"
-        node {{.WORKDIR}}/module/skills/docs-organization/scripts/lint-mermaid.mjs \
+        node {{.WORKDIR}}/module/skills/docs-organization/scripts/lint-mermaid.mjs --json \
           {{.WORKDIR}}/module/skills/docs-organization/scripts/__fixtures__/good.mmd
       assertions:
         - result.code ShouldEqual 0
@@ -101,7 +110,7 @@ testcases:
       script: |
         source /tmp/docs-discipline-e2e.env
         cd "$WORKDIR"
-        node {{.WORKDIR}}/module/skills/docs-organization/scripts/lint-mermaid.mjs \
+        node {{.WORKDIR}}/module/skills/docs-organization/scripts/lint-mermaid.mjs --json \
           {{.WORKDIR}}/module/skills/docs-organization/scripts/__fixtures__/low-contrast.mmd
       assertions:
         - result.code ShouldEqual 1
