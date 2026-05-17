@@ -16,18 +16,21 @@ tasks:
       - task --list-all
 
   install:
-    desc: 'Install this pack into the local AI assistant via lola + dev dependencies (SCOPE=user|project, default user)'
+    desc: 'Install this pack into the local AI assistant via lola + npm deps for local dev (ASSISTANT=, SCOPE=user|project)'
     cmds:
-      # npm install must run BEFORE lola install: lola copies the scripts/
-      # directory verbatim, so node_modules has to exist in the source for
-      # the installed assistant location to be runnable without a separate
-      # npm install step at the destination.
+      # `install:scripts` runs `npm install` in the source `scripts/` dir so
+      # `task test:diagrams` and `task lint` work locally. It is NOT a
+      # prerequisite for the lola install — lola excludes `node_modules/`
+      # from the install (see ALWAYS_IGNORE in its parsers.py). End users
+      # who hit the `MERVAL_NOT_INSTALLED` finding run `npm install` at
+      # the destination as the skill instructs.
       - task: install:scripts
       - task: install:lola
 
   install:lola:
-    desc: 'Register and install this pack via lola (https://lobstertrap.org/lola/) — SCOPE=user|project, default user'
+    desc: 'Register and install this pack via lola (https://lobstertrap.org/lola/). Defaults to claude-code @ user scope. Override with ASSISTANT=<x> SCOPE=<user|project>.'
     vars:
+      ASSISTANT: '{{.ASSISTANT | default "claude-code"}}'
       SCOPE: '{{.SCOPE | default "user"}}'
     requires:
       vars:
@@ -39,9 +42,16 @@ tasks:
           lola is not installed. End users install this pack via lola — see
           https://lobstertrap.org/lola/ for installation instructions.
           If you only want to run the test suite, use: task install:scripts
+      # Require lola >= 0.4.5 (PR #121 added gitignore-aware module copy + module-subtree
+      # detection. Earlier versions copy the entire repo including .venv/, .git/, etc.,
+      # which is slow and confuses the `mod add` walker.)
+      - sh: |
+          ver=$(lola --version 2>&1 | awk '{print $2}' | head -1 | cut -d. -f1-3)
+          [ "$(printf '%s\n%s\n' '0.4.5' "$ver" | sort -V | head -1)" = "0.4.5" ]
+        msg: "lola >= 0.4.5 required. Upgrade with: uv tool install --force git+https://github.com/LobsterTrap/lola"
     cmds:
       - lola mod add --name docs-discipline .
-      - lola install docs-discipline --scope {{.SCOPE}}
+      - lola install docs-discipline -a {{.ASSISTANT}} --scope {{.SCOPE}} {{.CLI_ARGS}}
 
   install:scripts:
     desc: Install npm dependencies for the docs-organization scripts (merval)
@@ -55,12 +65,27 @@ tasks:
       - task: uninstall:scripts
 
   uninstall:lola:
-    desc: Deregister this pack from lola and remove its skills from every assistant/scope — DESTRUCTIVE
+    desc: 'Uninstall this pack via lola. Mirrors install: override with ASSISTANT=<x> SCOPE=<user|project>.'
+    vars:
+      ASSISTANT: '{{.ASSISTANT | default "claude-code"}}'
+      SCOPE: '{{.SCOPE | default "user"}}'
+    requires:
+      vars:
+        - name: SCOPE
+          enum: [user, project]
     preconditions:
       - sh: command -v lola
         msg: lola is not installed — nothing to uninstall.
     cmds:
-      - lola mod rm -f docs-discipline
+      - lola uninstall docs-discipline -a {{.ASSISTANT}} --scope {{.SCOPE}} -f
+      # Deregister the module from lola's registry only when no installations
+      # remain anywhere. `lola mod rm` does NOT clean up installs — running it
+      # prematurely orphans skills/commands/managed-section markers on other
+      # hosts/scopes. Parse `lola list` to confirm the module is gone.
+      - |
+        if ! lola list 2>/dev/null | grep -q '^docs-discipline$'; then
+          lola mod rm -f docs-discipline
+        fi
 
   uninstall:scripts:
     desc: Remove the docs-organization scripts' node_modules — DESTRUCTIVE
@@ -70,7 +95,11 @@ tasks:
 
   test:
     desc: Run all tests
-    deps: [test:unit, test:bash, test:e2e]
+    deps: [lint:module, test:unit, test:bash, test:e2e]
+
+  lint:module:
+    desc: Validate the lola module layout (AGENTS.md, SKILL.md frontmatter, command frontmatter, anchor instructions)
+    cmd: bash scripts/lint-module.sh .
 
   test:unit:
     desc: Run node:test unit tests

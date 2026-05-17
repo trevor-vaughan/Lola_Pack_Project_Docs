@@ -5,6 +5,14 @@ description: Use ONLY when the user explicitly invokes /docs-init, /docs-audit, 
 
 # docs-organization
 
+> **Helper paths.** Every `scripts/<x>` and `reference/<x>` reference in this
+> file is relative to the directory that contains this `SKILL.md`. Anchor on
+> the loaded path (`SKILL_DIR=$(dirname "$(realpath <skill-md>)")`) and
+> resolve every helper as `"$SKILL_DIR/scripts/<x>"` or
+> `"$SKILL_DIR/reference/<x>"`. Do not hardcode `.claude/skills/...` or
+> search candidate paths — the install destination varies by host and scope,
+> but helpers are always next to the loaded `SKILL.md`.
+
 This skill keeps a project's documentation organized and current. It is
 **never auto-invoked**. All behavior is reached through one of four slash
 commands:
@@ -92,21 +100,31 @@ and return structured output without shell-escaping concerns. Shell
 tools are still appropriate for the deterministic scripts under
 `scripts/`, which run outside the agent.
 
-## Diagrams are actively encouraged
+## Diagrams are actively encouraged — but only when they clarify
 
-This skill is not a passive linter — it actively nudges authors to add
-diagrams where they would clarify concepts. `/docs-audit` surfaces
-`MISSING_DIAGRAM` (info-level) findings when prose sections describe
-something a diagram would communicate faster than words: architecture,
-multi-step interactions, state transitions, branching decisions, data
-flow, or entity relationships. `/docs-update` offers to scaffold a
-starter mermaid block under the flagged section heading. Findings are
-info-level — never blockers. Authors are nudged, not forced.
+This skill nudges authors toward diagrams, but applies a strict bar.
+A `MISSING_DIAGRAM` finding fires only when **both** are true:
 
-The full concept-to-diagram-type table (with rationale for each pairing)
-lives in `reference/mermaid-house-style.md`. Consult it when emitting
-`MISSING_DIAGRAM` findings or when scaffolding a starter block, so the
-suggestion matches the documented mapping.
+1. The relationships are non-obvious from a linear top-to-bottom read —
+   real branching, parallelism, state transitions, or non-trivial
+   component interactions — not a sequential procedure with at most one
+   binary branch.
+2. A reader would have to mentally render a diagram anyway to follow
+   the prose.
+
+Reject candidates that already read as a diagram in text form
+(directory trees, numbered install steps), small matrices better served
+by a table, three-item role lists framed as "pipelines", and meta-loops
+whose value is conceptual rather than informational. The
+`reference/mermaid-house-style.md` "Skip the diagram for" rule is the
+sibling test — apply it strictly.
+
+The full concept-to-diagram-type table (with rationale for each
+pairing) and the skip rule live in `reference/mermaid-house-style.md`.
+Consult it when emitting `MISSING_DIAGRAM` findings or when scaffolding
+a starter block. `/docs-update` offers to scaffold a starter mermaid
+block only for findings that clear the bar. Findings are info-level —
+never blockers. Authors are nudged, not forced.
 
 ## Tools this skill uses
 

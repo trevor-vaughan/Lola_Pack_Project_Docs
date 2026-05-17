@@ -43,29 +43,13 @@ flowchart TD
   agg --> punch["present punch list"]
 ```
 
-### Locate the docs-organization skill bundle
+### Activate the docs-organization skill
 
-Before running any script or reading any reference file shipped with the
-docs-organization skill, locate the skill bundle on disk by checking these
-locations in order and using the first that exists:
-
-1. **Project-local skills directory** for your agent host
-   (e.g., `.claude/skills/docs-organization/` under Claude Code, or the
-   equivalent project-scoped skills path for your host).
-2. **User-global skills directory** for your agent host
-   (e.g., `~/.claude/skills/docs-organization/` under Claude Code,
-   `~/.config/opencode/skills/docs-organization/` under OpenCode, or
-   wherever your host installs user-scoped skill packs).
-3. **Plugin-bundled location**, if your host installs skills as part of a
-   plugin pack (e.g., `~/.claude/plugins/*/skills/docs-organization/`).
-4. **Dev-workspace fallback**: `module/skills/docs-organization/` — this
-   only resolves when running inside the pack's own source repository.
-
-Use the agent host's filesystem tools (e.g., `Glob`, or `bash` for `ls`)
-to check each candidate. Bind the first existing path to `$SKILL_DIR`.
-If more than one candidate exists, prefer the most recently modified — if
-that's ambiguous, ask the user which to use. Every `scripts/...` and
-`reference/...` path below is relative to `$SKILL_DIR`.
+Invoke the `docs-organization` skill via your host's Skill tool. The skill's
+`SKILL.md` defines `$SKILL_DIR` as the directory the host loaded it from
+(`SKILL_DIR=$(dirname "$(realpath <loaded-skill-md>)")`). Reuse `$SKILL_DIR`
+for every `scripts/...` and `reference/...` reference below — do not
+hardcode `.claude/skills/...` or search candidate paths.
 
 ### Steps
 
@@ -94,17 +78,25 @@ that's ambiguous, ask the user which to use. Every `scripts/...` and
           Return a list of `file:line` citations with what the doc says vs
           what the code actually does. Do not edit any file. Reply in
           under 300 words."
-       2. **Missing diagrams (info-level encouragement):** "Read <file>.
-          Identify sections that describe one of: a multi-step interaction
-          between actors, a state that transitions through phases, a
-          system's component layout, a branching decision flow, or data
-          shape moving through pipeline stages — and that have no
-          accompanying mermaid diagram. For each, return a
-          `MISSING_DIAGRAM` finding with the section heading, what kind
-          of diagram would fit (flowchart / sequenceDiagram /
-          stateDiagram-v2 / erDiagram), and one sentence of justification.
-          Severity is info (never blocker). Reply in under 200 words. If
-          no candidates exist, return an empty list — do not invent."
+       2. **Missing diagrams (info-level encouragement, strict bar):**
+          "Read <file>. Identify sections where adding a mermaid diagram
+          would actively clarify a complicated concept — not restate a
+          simple list. A candidate must satisfy **both**: (a) the
+          relationships are non-obvious from a linear top-to-bottom
+          read (real branching, parallelism, state transitions, or
+          non-trivial component interactions); and (b) the reader would
+          have to mentally render a diagram anyway to follow the prose.
+          Reject candidates that are linear procedures with at most one
+          binary branch, already drawn as text (directory trees,
+          install steps, tables), small matrices better served by a
+          table, or three-item role lists framed as 'pipelines'. For
+          each surviving candidate, return a `MISSING_DIAGRAM` finding
+          with the section heading, fitting type (flowchart /
+          sequenceDiagram / stateDiagram-v2 / erDiagram), and a
+          one-sentence justification that names *what's non-obvious*
+          the diagram would expose. Severity is info (never blocker).
+          Reply in under 200 words. If no candidates exist, return an
+          empty list — do not invent."
    - For each `.mmd` file or fenced ```mermaid block found within the
      enumerated documentation files (same scope rules apply — skip
      dot-directories, gitignored paths, and LLM-config files):

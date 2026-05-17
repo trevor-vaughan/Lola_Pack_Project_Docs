@@ -15,29 +15,13 @@ fresh eyes by construction.
 
 ## Instructions
 
-### Locate the adr skill bundle
+### Activate the adr skill
 
-Before running any script or reading any reference file shipped with the
-adr skill, locate the skill bundle on disk by checking these locations
-in order and using the first that exists:
-
-1. **Project-local skills directory** for your agent host
-   (e.g., `.claude/skills/adr/` under Claude Code, or the equivalent
-   project-scoped skills path for your host).
-2. **User-global skills directory** for your agent host
-   (e.g., `~/.claude/skills/adr/` under Claude Code,
-   `~/.config/opencode/skills/adr/` under OpenCode, or wherever your
-   host installs user-scoped skill packs).
-3. **Plugin-bundled location**, if your host installs skills as part of a
-   plugin pack (e.g., `~/.claude/plugins/*/skills/adr/`).
-4. **Dev-workspace fallback**: `module/skills/adr/` — this only resolves
-   when running inside the pack's own source repository.
-
-Use the agent host's filesystem tools (e.g., `Glob`, or `bash` for `ls`)
-to check each candidate. Bind the first existing path to `$SKILL_DIR`.
-If more than one candidate exists, prefer the most recently modified — if
-that's ambiguous, ask the user which to use. Every `scripts/...` and
-`reference/...` path below is relative to `$SKILL_DIR`. When dispatching
+Invoke the `adr` skill via your host's Skill tool. The skill's `SKILL.md`
+defines `$SKILL_DIR` as the directory the host loaded it from
+(`SKILL_DIR=$(dirname "$(realpath <loaded-skill-md>)")`). Reuse `$SKILL_DIR`
+for every `scripts/...` and `reference/...` reference below — do not
+hardcode `.claude/skills/...` or search candidate paths. When dispatching
 subagents, substitute the resolved absolute path of `$SKILL_DIR` into
 the subagent prompt — subagents do not inherit your shell variables.
 

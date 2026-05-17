@@ -47,3 +47,20 @@ The skills are independent. Use one without the other if you prefer.
 - Git (the pack assumes you are operating in a git repository).
 - Node.js ≥20 for the mermaid linter.
 - Bash for the structure/staleness/index scripts.
+
+## Notes for AI assistants
+
+Each skill's `SKILL.md` carries a "Helper paths" preamble instructing the
+agent to anchor on the loaded SKILL.md path
+(`SKILL_DIR=$(dirname "$(realpath <skill-md>)")`) and reference every
+`scripts/<x>` and `reference/<x>` helper as `"$SKILL_DIR/..."`. The slash
+commands (`/docs-init`, `/docs-audit`, `/docs-update`, `/diagram-test`,
+`/adr-new`, `/adr-review`) each activate the relevant skill via the
+host's Skill tool and reuse `$SKILL_DIR` from there. Do not hardcode
+`.claude/skills/...` or search candidate paths — the install destination
+varies by host (Claude Code, OpenCode, Cursor, Gemini CLI) and scope, but
+helpers are always next to the loaded `SKILL.md`.
+
+When `/docs-update` triggers a `MISSING_ADR_INDEX` finding, it
+additionally activates the `adr` skill and binds `$ADR_DIR` from its
+loaded `SKILL.md` location the same way.

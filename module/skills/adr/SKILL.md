@@ -5,6 +5,14 @@ description: Use ONLY when the user explicitly invokes /adr-new or /adr-review. 
 
 # adr
 
+> **Helper paths.** Every `scripts/<x>` and `reference/<x>` reference in this
+> file is relative to the directory that contains this `SKILL.md`. Anchor on
+> the loaded path (`SKILL_DIR=$(dirname "$(realpath <skill-md>)")`) and
+> resolve every helper as `"$SKILL_DIR/scripts/<x>"` or
+> `"$SKILL_DIR/reference/<x>"`. Do not hardcode `.claude/skills/...` or
+> search candidate paths — the install destination varies by host and scope,
+> but helpers are always next to the loaded `SKILL.md`.
+
 Manage Architectural Decision Records using MADR 4.0. Never auto-invoked.
 All behavior is reached through two slash commands:
 
