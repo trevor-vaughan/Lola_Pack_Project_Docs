@@ -39,36 +39,6 @@ commands:
 
 ## Scope of audit
 
-```mermaid
-%%{init: {'theme': 'base', 'themeVariables': {
-  'primaryColor': '#2f6dab',
-  'primaryTextColor': '#1e1e1e',
-  'primaryBorderColor': '#7c8ba1',
-  'lineColor': '#7c8ba1',
-  'edgeLabelBackground': '#eef2f8',
-  'tertiaryColor': 'transparent',
-  'tertiaryTextColor': '#7c8ba1',
-  'tertiaryBorderColor': '#7c8ba1',
-  'clusterBkg': 'transparent',
-  'clusterBorder': '#7c8ba1',
-  'titleColor': '#7c8ba1',
-  'noteBkgColor': '#eef2f8',
-  'noteTextColor': '#1e1e1e',
-  'fontFamily': 'system-ui, sans-serif'
-}, 'themeCSS': '.node .nodeLabel{color:#ffffff!important;fill:#ffffff!important;}'}}%%
-flowchart TD
-  candidate[candidate file path]
-  candidate --> gi{matched by .gitignore?}
-  gi -->|yes| excl[excluded]
-  gi -->|no| dot{under a dot-directory?}
-  dot -->|yes| excl
-  dot -->|no| llm{LLM-config file?}
-  llm -->|yes| excl
-  llm -->|no| incl{"README, docs, or module?"}
-  incl -->|yes| inscope[in scope]
-  incl -->|no| excl
-```
-
 The skill audits **project-centric documentation only** — content that
 describes the project itself. When enumerating documentation files (in
 `/docs-audit` and any command that re-runs its lanes), include:
@@ -100,7 +70,7 @@ and return structured output without shell-escaping concerns. Shell
 tools are still appropriate for the deterministic scripts under
 `scripts/`, which run outside the agent.
 
-## Diagrams are actively encouraged — but only when they clarify
+## When a diagram earns its place
 
 This skill nudges authors toward diagrams, but applies a strict bar.
 A `MISSING_DIAGRAM` finding fires only when **both** are true:

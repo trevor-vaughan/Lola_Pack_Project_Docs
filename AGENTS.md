@@ -1,7 +1,7 @@
 # docs-discipline — agent context for working on this repo
 
 This repo is the source of the `docs-discipline`
-[lola](https://lobstertrap.org/lola/) pack — two independent skills
+[lola](https://docs.getlola.dev/) pack — two independent skills
 (`docs-organization`, `adr`) and six explicit slash commands
 (`/docs-init`, `/docs-audit`, `/docs-update`, `/diagram-test`,
 `/adr-new`, `/adr-review`). The installable surface lives under

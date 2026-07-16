@@ -14,35 +14,6 @@ afterward to act on them.
 
 ## Instructions
 
-```mermaid
-%%{init: {'theme': 'base', 'themeVariables': {
-  'primaryColor': '#2f6dab',
-  'primaryTextColor': '#1e1e1e',
-  'primaryBorderColor': '#7c8ba1',
-  'lineColor': '#7c8ba1',
-  'edgeLabelBackground': '#eef2f8',
-  'tertiaryColor': 'transparent',
-  'tertiaryTextColor': '#7c8ba1',
-  'tertiaryBorderColor': '#7c8ba1',
-  'clusterBkg': 'transparent',
-  'clusterBorder': '#7c8ba1',
-  'titleColor': '#7c8ba1',
-  'noteBkgColor': '#eef2f8',
-  'noteTextColor': '#1e1e1e',
-  'fontFamily': 'system-ui, sans-serif'
-}, 'themeCSS': '.node .nodeLabel{color:#ffffff!important;fill:#ffffff!important;}'}}%%
-flowchart TD
-  start["invoke /docs-audit"]
-  start --> l1["Lane 1: check-structure.sh"]
-  l1 --> l2["Lane 2: check-staleness.sh"]
-  l2 --> gate{"either exit code 2?"}
-  gate -->|yes| stop["surface error and stop"]
-  gate -->|no| l3["Lane 3: enumerate in-scope docs"]
-  l3 --> sub["dispatch Explore subagents per file"]
-  sub --> agg["aggregate findings by lane and severity"]
-  agg --> punch["present punch list"]
-```
-
 ### Activate the docs-organization skill
 
 Invoke the `docs-organization` skill via your host's Skill tool. The skill's
@@ -71,7 +42,7 @@ hardcode `.claude/skills/...` or search candidate paths.
    - Use the agent host's built-in glob tool (Claude Code: `Glob`), not
      shell `find`, for portability and structured output.
    - For each enumerated file:
-     - Dispatch an `Explore`-type subagent with two prompts (separately,
+     - Dispatch an `Explore`-type subagent with three prompts (separately,
        so findings can be attributed):
        1. **Content drift:** "Read <file>. Identify any specific claims in
           this document that no longer match the code in this repository.
@@ -97,6 +68,17 @@ hardcode `.claude/skills/...` or search candidate paths.
           the diagram would expose. Severity is info (never blocker).
           Reply in under 200 words. If no candidates exist, return an
           empty list — do not invent."
+       3. **Readability (wall-of-text):** "Read <file>. Find prose
+          paragraphs dense enough to hurt scannability: roughly six or
+          more sentences, or past ~120 words, with no paragraph break.
+          Measure prose only — ignore code blocks, tables, lists,
+          headings, and blockquotes. For each, return a `WALL_OF_TEXT`
+          finding with the start line, the section heading, and the
+          approximate sentence/word count. Severity is info. Do NOT flag
+          genres where dense unbroken prose is the convention (academic
+          papers, legal text, formal specifications in that house style);
+          if the whole document is one of those, return an empty list and
+          say so. Do not edit any file. Reply in under 200 words."
    - For each `.mmd` file or fenced ```mermaid block found within the
      enumerated documentation files (same scope rules apply — skip
      dot-directories, gitignored paths, and LLM-config files):
@@ -112,7 +94,7 @@ hardcode `.claude/skills/...` or search candidate paths.
      `| Code | File | Line | Note |` where:
      - `Code` is the finding code (e.g., `MISSING_DIAGRAM`,
        `STALE_README`, `MISSING_GITIGNORE_SUPERPOWERS`,
-       `MISSING_HOUSE_STYLE_HEADER`).
+       `MISSING_HOUSE_STYLE_HEADER`, `WALL_OF_TEXT`).
      - `File` is the repo-relative path.
      - `Line` is the relevant line number, or `—` if not applicable.
      - `Note` carries the data `/docs-update` needs to act on the
@@ -122,11 +104,43 @@ hardcode `.claude/skills/...` or search candidate paths.
          `erDiagram`), and the one-sentence justification.
        - Content/diagram drift: what the doc claims vs. what the code
          shows, with a code citation.
+       - `WALL_OF_TEXT`: section heading and approximate sentence/word
+         count. Info-level nudge; never a blocker.
        - Mechanical codes: usually no extra detail needed.
    - If a finding doesn't fit the schema, list it under a separate
      "Other" subsection rather than mangling the table.
 6. **Do not write any files.** Offer: "Run /docs-update to fix these
    findings interactively."
+
+## Example output
+
+A run against a small project part-way through cleanup might report:
+
+`3 blockers, 1 warning, 3 info`
+
+**Blockers**
+
+| Code | File | Line | Note |
+|------|------|------|------|
+| `MISSING_GITIGNORE_SUPERPOWERS` | `.gitignore` | — | add `docs/superpowers/` |
+| `MERVAL_NOT_INSTALLED` | — | — | run `npm install` in the installed `scripts/` dir |
+| `MISSING_HOUSE_STYLE_HEADER` | `docs/dev/diagrams/pipeline.mmd` | 1 | prepend the Solar init header |
+
+**Warnings**
+
+| Code | File | Line | Note |
+|------|------|------|------|
+| `STALE_README` | `README.md` | — | README older than the latest source change; re-read for drift |
+
+**Info**
+
+| Code | File | Line | Note |
+|------|------|------|------|
+| `STALE_DOC` | `docs/dev/architecture.md` | — | `src/api/` changed 14 commits since this doc last did |
+| `MISSING_DIAGRAM` | `docs/dev/architecture.md` | 30 | "Data flow" — `flowchart`; three services fan out to one queue, non-obvious from the prose |
+| `WALL_OF_TEXT` | `README.md` | 42 | "Configuration" — ~7 sentences, no break |
+
+Then: "Run /docs-update to fix these findings interactively."
 
 ## Stop conditions
 
