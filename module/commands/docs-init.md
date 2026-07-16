@@ -51,8 +51,9 @@ hardcode `.claude/skills/...` or search candidate paths.
      add a diagram and how to style it.
      ```
 
-     Diagrams are actively encouraged for architecture overviews,
-     sequence flows, state machines, decision trees, and data flow.
+     Add a diagram when relationships are hard to follow in prose — an
+     architecture overview, a state machine, a branching decision. See the
+     mermaid house-style reference for when one earns its place.
 4. **Existing-project path** (README exists, docs/ may or may not):
    - Read the current README. If it contains substantial usage detail
      (heuristic: more than 200 lines, or sections labeled "Configuration",

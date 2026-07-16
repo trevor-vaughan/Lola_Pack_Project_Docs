@@ -85,6 +85,8 @@ stateDiagram-v2
   `/adr-new` instantiates.
 - `reference/review-rubric.md` — the rubric `/adr-review` applies via
   subagent.
+- `reference/example-adr.md` — a filled ADR that clears the review rubric,
+  shown as a target for `/adr-new` output.
 
 ## Cross-skill
 

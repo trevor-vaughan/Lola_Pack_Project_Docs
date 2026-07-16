@@ -1,6 +1,6 @@
 # docs-discipline
 
-A [lola](https://lobstertrap.org/lola/) pack with two skills for keeping
+A [lola](https://docs.getlola.dev/) pack with two skills for keeping
 technical project documentation on track, current, and consistent. Nothing
 auto-invokes — every behavior is reached through an explicit slash command.
 
@@ -128,7 +128,7 @@ tests/                                                 # bash + node unit tests,
 ## Where to go next
 
 - **For maintainers/contributors:** `AGENTS.md` at the repo root.
-- **For the lola pack format:** see https://lobstertrap.org/lola/
+- **For the lola pack format:** see https://docs.getlola.dev/
 - **For MADR:** see https://adr.github.io/madr/
 
 ## License

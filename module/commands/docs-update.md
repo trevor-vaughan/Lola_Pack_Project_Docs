@@ -15,43 +15,6 @@ semantic fixes (rewriting paragraphs) get per-fix confirmation.
 
 ## Instructions
 
-```mermaid
-%%{init: {'theme': 'base', 'themeVariables': {
-  'primaryColor': '#2f6dab',
-  'primaryTextColor': '#1e1e1e',
-  'primaryBorderColor': '#7c8ba1',
-  'lineColor': '#7c8ba1',
-  'edgeLabelBackground': '#eef2f8',
-  'tertiaryColor': 'transparent',
-  'tertiaryTextColor': '#7c8ba1',
-  'tertiaryBorderColor': '#7c8ba1',
-  'clusterBkg': 'transparent',
-  'clusterBorder': '#7c8ba1',
-  'titleColor': '#7c8ba1',
-  'noteBkgColor': '#eef2f8',
-  'noteTextColor': '#1e1e1e',
-  'fontFamily': 'system-ui, sans-serif'
-}, 'themeCSS': '.node .nodeLabel{color:#ffffff!important;fill:#ffffff!important;}'}}%%
-flowchart TD
-  start["invoke /docs-update"]
-  start --> obtain["obtain punch list"]
-  obtain --> sort["sort findings into 3 buckets"]
-  sort --> mech["mechanical bucket"]
-  sort --> enc["encouragement bucket"]
-  sort --> sem["semantic bucket"]
-  mech --> mech_ask{"apply all mechanical fixes?"}
-  mech_ask -->|yes| mech_apply["apply in sequence, single batch commit"]
-  mech_ask -->|no| mech_skip["skip bucket"]
-  enc --> enc_loop["for each MISSING_DIAGRAM finding"]
-  enc_loop --> enc_ask{"scaffold starter block?"}
-  enc_ask -->|yes| enc_apply["insert mermaid block, commit individually"]
-  enc_ask -->|no| enc_skip["skip finding"]
-  sem --> sem_loop["for each semantic finding"]
-  sem_loop --> sem_ask{"apply proposed rewrite?"}
-  sem_ask -->|yes| sem_apply["apply edit, commit individually"]
-  sem_ask -->|no| sem_skip["skip finding"]
-```
-
 ### Activate the docs-organization skill
 
 Invoke the `docs-organization` skill via your host's Skill tool. The skill's
@@ -81,8 +44,8 @@ present, skip the `adr` activation.
      individual offer ("section X looks like a candidate for a Y diagram —
      scaffold a starter mermaid block under that heading?"). Skip by
      default if the user declines; never auto-apply.
-   - **Semantic:** content drift, diagram drift, `STALE_README`, `STALE_DOC`
-     findings, and anything else needing judgment.
+   - **Semantic:** content drift, diagram drift, `STALE_README`, `STALE_DOC`,
+     `WALL_OF_TEXT` findings, and anything else needing judgment.
 4. **Apply mechanical fixes:**
    - Show the user the full list of mechanical fixes. Ask once: "Apply all
      mechanical fixes?" If yes, apply them in sequence.
@@ -154,8 +117,21 @@ present, skip the `adr` activation.
    - For each semantic finding, show the user:
      - The file and location.
      - What the doc currently says (exact excerpt).
-     - What the code actually does (citation).
-     - Proposed rewrite.
+     - What the code actually does (citation). For `WALL_OF_TEXT` there is
+       no code citation; instead show the proposed paragraph breaks.
+     - Proposed rewrite. For `WALL_OF_TEXT`, pick the lighter of two structure
+       changes. Both keep every fact and claim in the paragraph:
+       - **Whitespace reflow** — insert blank lines at topic seams to yield two
+         to four coherent paragraphs, changing nothing but whitespace. Use when
+         the paragraph is one continuous argument that just runs long.
+       - **Sub-bullet restructure** — when the paragraph *enumerates* several
+         distinct mechanisms or rules, lift each into its own bullet. You may
+         trim connective words ("and", "while", "so") so each bullet reads
+         grammatically, but never drop or reword a fact. Use when the reader
+         would otherwise hold several ideas at once (the "four ideas" test in
+         `module/AGENTS.md`).
+       Never one sentence per line. Skip the finding entirely for
+       academic/formulaic genres where dense prose is the convention.
    - Ask: "Apply this fix?" Wait for yes/no/skip.
    - On yes, apply the edit.
    - **Lint before commit:** if the edit touches a `.mmd` file or a
@@ -165,6 +141,31 @@ present, skip the `adr` activation.
    - Commit individually with a message referencing the finding. For
      fixes that touch a single file, include the basename in the subject:
      `docs(<basename>): <imperative summary>`.
+
+## Example: a WALL_OF_TEXT sub-bullet fix
+
+Before — one block asking the reader to hold four things at once:
+
+> The audit runs three lanes, and the first two are fast deterministic scripts
+> whose JSON is parsed for findings, while the third is slow because it
+> dispatches a subagent per file to judge content drift, missing diagrams, and
+> readability, after which every lane's findings are merged and sorted by
+> severity into the punch list that /docs-update later parses, so the format has
+> to stay regular or the downstream parse breaks.
+
+After — each beat on its own line:
+
+> The audit runs three lanes:
+>
+> - **Lanes 1–2 (fast):** deterministic scripts whose JSON is parsed for findings.
+> - **Lane 3 (slow):** it dispatches a subagent per file to judge content drift,
+>   missing diagrams, and readability.
+> - **Merge:** every lane's findings are merged and sorted by severity into the
+>   punch list that /docs-update later parses.
+>
+> The format has to stay regular, or the downstream parse breaks.
+
+Every fact is preserved — only the structure and a few connective words changed.
 
 ## Stop conditions
 
