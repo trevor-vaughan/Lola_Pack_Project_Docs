@@ -17,10 +17,16 @@ if [ ! -f README.md ] || [ ! -s README.md ]; then
     "README.md is missing or empty. Run /docs-init to scaffold one."
 fi
 
-# Check 2: .gitignore contains docs/superpowers/ entry.
-if [ ! -f .gitignore ] || ! grep -qE '^docs/superpowers/?$' .gitignore; then
-  add_finding "MISSING_GITIGNORE_SUPERPOWERS" "blocker" \
-    "docs/superpowers/ must be in .gitignore. /docs-init or /docs-update can add it."
+# Check 2: if the project uses a docs/ tree, docs/superpowers/ must be gitignored
+# (it holds working planning artifacts that must never be committed). A repo with
+# no docs/ directory is not using the workflow, so demanding the preventive entry
+# there is noise, not a defect — skip the check. The moment superpowers writes
+# docs/superpowers/, docs/ exists and the check fires before anything is committed.
+if [ -d docs ]; then
+  if [ ! -f .gitignore ] || ! grep -qE '^docs/superpowers/?$' .gitignore; then
+    add_finding "MISSING_GITIGNORE_SUPERPOWERS" "blocker" \
+      "docs/superpowers/ must be in .gitignore. /docs-init or /docs-update can add it."
+  fi
 fi
 
 # Check 3: no docs/superpowers files are tracked.

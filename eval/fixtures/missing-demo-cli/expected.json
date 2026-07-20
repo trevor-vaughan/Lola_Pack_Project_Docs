@@ -1,0 +1,1 @@
+{"lane": "missing-demo", "expect_flag": true, "note": "user-facing CLI with a live progress bar; README has no asciinema/GIF/screenshot. A hero demo would land it. Should flag."}

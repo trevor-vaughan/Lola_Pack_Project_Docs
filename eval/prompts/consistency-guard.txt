@@ -1,0 +1,14 @@
+Review the documentation below for internal inconsistencies or contradictions.
+
+A CONTRADICTION requires both statements to make a claim about the SAME subject
+and disagree on it. If two statements concern DIFFERENT subjects (even closely
+related ones), do NOT label it a contradiction — instead flag the actual, weaker
+issue precisely (e.g. an instruction unsupported by the referenced rules, or one
+that violates a stated guardrail). Name the shared subject explicitly when you
+do claim a contradiction.
+
+For each issue, output JSON only:
+{"findings":[{"issue":"short","statement_a":"...","statement_b":"...","shared_subject":"...","label":"contradiction|unsupported-instruction|other"}]}
+If none, output {"findings":[]}.
+
+--- DOCS ---

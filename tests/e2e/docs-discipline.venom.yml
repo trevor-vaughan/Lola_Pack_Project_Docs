@@ -1,4 +1,9 @@
 name: docs-discipline-e2e
+# WORKDIR is the repo root under test; the Taskfile passes it as
+# --var WORKDIR=<repo-root>. The "." default keeps the suite runnable
+# standalone from the repo root.
+vars:
+  WORKDIR: "."
 testcases:
 
 - name: scaffold-fresh-project
@@ -39,7 +44,11 @@ testcases:
       assertions:
         - result.code ShouldEqual 1
         - result.systemout ShouldContainSubstring "MISSING_README"
-        - result.systemout ShouldContainSubstring "MISSING_GITIGNORE_SUPERPOWERS"
+        # No docs/ tree yet, so the preventive docs/superpowers gitignore entry
+        # is intentionally NOT demanded — gated behavior (see
+        # check-structure.test.sh Test 2b). Nagging a repo that does not use the
+        # docs workflow is noise, not a defect.
+        - result.systemout ShouldNotContainSubstring "MISSING_GITIGNORE_SUPERPOWERS"
 
 - name: write-readme-and-gitignore
   steps:

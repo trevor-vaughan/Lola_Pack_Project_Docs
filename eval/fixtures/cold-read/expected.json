@@ -1,0 +1,6 @@
+{"lane":"cold-read","planted":[
+ {"id":"missing-step","kw":["step 3","step","3"],"desc":"install jumps 2->4; step 3 (license) missing"},
+ {"id":"jargon-widget","kw":["widget"],"desc":"'widget'/'widget cache' never defined"},
+ {"id":"dangling-ref","kw":["Performance"],"desc":"'see the Performance section below' does not exist"},
+ {"id":"prose-example-contradiction","kw":["8080","9090","port"],"desc":"prose says port 8080, example uses 9090"},
+ {"id":"terminology-drift","kw":["profile","config"],"desc":"'profile' vs 'config file' for the same thing"}]}

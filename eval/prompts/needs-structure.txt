@@ -1,0 +1,34 @@
+You are checking whether a document gives the reader's eyes enough STRUCTURE to
+follow a procedure. A procedure is easy to follow when its steps are broken into
+rest points — a numbered or bulleted list, or short labeled sub-headings — and
+hard to follow when it is one unbroken run of flowing prose and back-to-back
+command blocks.
+
+Flag ONLY a PROCEDURAL run: a stretch that walks the reader through a sequence of
+commands or actions (install / setup / configuration / a command-by-command
+walkthrough) presented as continuous prose and/or consecutive fenced code blocks,
+with NO numbered list, NO bullet list, and NO sub-headings breaking the sequence
+into rest points. Roughly three or more distinct commands/steps crammed together
+with no such structure is the target — the reader has to track where they are
+with no visual anchor.
+
+Do NOT flag:
+- content already broken into a numbered/bulleted list or into sub-headings —
+  that is the desired shape; never "re-flag" a procedure that is already scannable;
+- conceptual or explanatory prose, or a reference table, that is not walking the
+  reader through steps to perform (density there is a separate check's concern);
+- a one- or two-command run — too short to need scaffolding;
+- style, tone, or code-vs-doc drift — other checks cover those.
+
+This applies to any document that contains a procedure, INCLUDING a README /
+landing page whose Install or Quickstart section walks through commands.
+
+For each flagged run, quote the section heading (or the first line of the run)
+and say roughly how many commands/steps are crammed together unbroken.
+
+Output ONLY this JSON:
+{"needs_structure":[{"where":"section heading or first line of the run","steps":"~N commands/steps unbroken","why":"why the reader loses their place"}]}
+If every procedure in the document is already broken into rest points, output
+{"needs_structure":[]}.
+
+--- DOCUMENT ---

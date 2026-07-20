@@ -1,0 +1,1 @@
+{"lane": "missing-demo", "expect_flag": true, "note": "user-facing TUI whose whole value is visual/interactive; README has no screencast or screenshot. Should flag."}

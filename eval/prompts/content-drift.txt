@@ -1,0 +1,17 @@
+You are auditing project documentation for CODE DRIFT: specific claims in the
+documentation that contradict the current code.
+
+You are running inside the repository. Inspect the code with your tools (read
+source files, grep for the constants, versions, counts, and function names the
+documentation mentions). Then compare each concrete claim in the documentation
+below against what the code actually does.
+
+Report ONLY concrete, verified contradictions: wrong numbers, wrong version
+strings, wrong counts, wrong described behavior. Do not report vague, stylistic,
+or unverifiable observations. If a claim matches the code, do not report it.
+
+Output ONLY a single JSON object and nothing else:
+{"findings":[{"claim":"short-id","doc_says":"...","code_says":"...","location":"file:line-or-symbol"}]}
+If nothing drifts, output {"findings":[]}.
+
+--- DOCUMENTATION UNDER AUDIT ---

@@ -1,0 +1,61 @@
+{
+ "lane": "content-drift",
+ "planted_drift": [
+  {
+   "id": "timeout",
+   "kw": [
+    "60",
+    "30",
+    "timeout"
+   ],
+   "tok": [
+    "60",
+    "30"
+   ]
+  },
+  {
+   "id": "maxconns",
+   "kw": [
+    "32",
+    "16",
+    "conn"
+   ],
+   "tok": [
+    "32",
+    "16"
+   ]
+  },
+  {
+   "id": "retries",
+   "kw": [
+    "5",
+    "3",
+    "retr"
+   ],
+   "tok": [
+    "5",
+    "3"
+   ]
+  },
+  {
+   "id": "schema",
+   "kw": [
+    "v2",
+    "v3",
+    "schema"
+   ],
+   "tok": [
+    "v2",
+    "v3"
+   ]
+  }
+ ],
+ "correct_claims": [
+  {
+   "id": "formats"
+  },
+  {
+   "id": "cache-ttl"
+  }
+ ]
+}

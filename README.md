@@ -49,12 +49,15 @@ Requirements: git, Node.js ≥20, bash, lola.
    `task test:diagrams` and `task lint` work locally.
 2. `install:lola` — `lola mod add` + `lola install`.
 
-**Note on `merval` at install time.** Lola excludes `node_modules/` from
-the install (it's in its built-in `ALWAYS_IGNORE` list). On first
-`/diagram-test` invocation after `task install`, the skill detects
-missing `@aj-archipelago/merval` and surfaces a `MERVAL_NOT_INSTALLED`
-finding with the exact path and command to run (`npm install` inside the
-installed `scripts/` dir). That one-shot user step is the supported
+**Note on npm deps at install time.** Lola excludes `node_modules/` from
+the install (it's in its built-in `ALWAYS_IGNORE` list). The scripts need
+two deps — `@aj-archipelago/merval` (mermaid lint) and `markdown-it`
+(the `/docs-audit` prose and reference lanes) — both installed by one
+`npm install` in the installed `scripts/` dir. On first `/diagram-test`
+invocation after `task install`, the skill detects missing `merval` and
+surfaces a `MERVAL_NOT_INSTALLED` finding with the exact path and command
+to run; `/docs-audit` likewise surfaces a one-time install prompt if
+`markdown-it` is missing. That one-shot user step is the supported
 workflow.
 
 Uninstall mirrors install:

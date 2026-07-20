@@ -14,7 +14,7 @@ the pack's own bash + node + Venom test suite.
 |---|---|
 | `module/AGENTS.md` | Lola module manifest (injected into the host's AGENTS.md / CLAUDE.md at install time) |
 | `module/skills/docs-organization/SKILL.md` | Skill prompt — invariants, drift detection, diagram authoring |
-| `module/skills/docs-organization/scripts/` | `check-structure.sh`, `check-staleness.sh`, `lint-mermaid.mjs`, `apply-palette.mjs`, `validate-palette.mjs`, `swap-palette.sh`, `contrast.mjs` |
+| `module/skills/docs-organization/scripts/` | `check-structure.sh`, `check-staleness.sh`, `check-prose.mjs`, `check-refs.mjs`, `lint-mermaid.mjs`, `apply-palette.mjs`, `validate-palette.mjs`, `swap-palette.sh`, `contrast.mjs` |
 | `module/skills/docs-organization/reference/` | `mermaid-house-style.md`, `readme-template.md`, `docs-tree-template.md`, palette assets |
 | `module/skills/adr/SKILL.md` | Skill prompt — MADR 4.0 workflow, status transitions |
 | `module/skills/adr/scripts/adr-index.sh` | Regenerates `index.md` whenever a new ADR is added or its status changes |
@@ -22,6 +22,7 @@ the pack's own bash + node + Venom test suite.
 | `module/commands/{docs-init,docs-audit,docs-update,diagram-test,adr-new,adr-review}.md` | The six slash commands |
 | `Taskfile.yml` + `.taskfiles/` | Task automation |
 | `tests/` | Bash unit tests + node:test unit tests + Venom e2e |
+| `eval/` | Headless `/docs-audit` lane evaluation (maintainer research; not installed, not in `task test`). See `eval/README.md`. |
 | `.github/workflows/` | CI |
 
 ## Working with this pack

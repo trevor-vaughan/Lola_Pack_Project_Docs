@@ -1,0 +1,97 @@
+{
+  "mode": "whole",
+  "runs": 5,
+  "recall_per_drift": {
+    "timeout": 1.0,
+    "maxconns": 1.0,
+    "retries": 1.0,
+    "schema": 1.0
+  },
+  "mean_recall": 1.0,
+  "consistent_across_runs": true,
+  "found_sets": [
+    [
+      "maxconns",
+      "retries",
+      "schema",
+      "timeout"
+    ],
+    [
+      "maxconns",
+      "retries",
+      "schema",
+      "timeout"
+    ],
+    [
+      "maxconns",
+      "retries",
+      "schema",
+      "timeout"
+    ],
+    [
+      "maxconns",
+      "retries",
+      "schema",
+      "timeout"
+    ],
+    [
+      "maxconns",
+      "retries",
+      "schema",
+      "timeout"
+    ]
+  ],
+  "mean_fp": 0.0,
+  "detail": [
+    {
+      "found": {
+        "timeout": true,
+        "maxconns": true,
+        "retries": true,
+        "schema": true
+      },
+      "fp": 0,
+      "n_findings": 4
+    },
+    {
+      "found": {
+        "timeout": true,
+        "maxconns": true,
+        "retries": true,
+        "schema": true
+      },
+      "fp": 0,
+      "n_findings": 4
+    },
+    {
+      "found": {
+        "timeout": true,
+        "maxconns": true,
+        "retries": true,
+        "schema": true
+      },
+      "fp": 0,
+      "n_findings": 4
+    },
+    {
+      "found": {
+        "timeout": true,
+        "maxconns": true,
+        "retries": true,
+        "schema": true
+      },
+      "fp": 0,
+      "n_findings": 4
+    },
+    {
+      "found": {
+        "timeout": true,
+        "maxconns": true,
+        "retries": true,
+        "schema": true
+      },
+      "fp": 0,
+      "n_findings": 4
+    }
+  ]
+}

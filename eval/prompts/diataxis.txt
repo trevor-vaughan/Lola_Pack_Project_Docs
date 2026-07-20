@@ -1,0 +1,21 @@
+Classify this document against the Diataxis framework and check for mode mixing.
+
+The four Diataxis modes:
+- tutorial: learning-oriented, walks a beginner through a lesson.
+- how-to: task-oriented, steps to accomplish one specific goal.
+- reference: information-oriented, dry factual description (API tables, flags).
+- explanation: understanding-oriented, discursive discussion of concepts/why.
+
+A README or landing page is a legitimate MULTI-MODE entry point (a little
+quickstart + a little explanation + a command list). Do NOT flag a landing page
+for mixing modes.
+
+For any OTHER document: report MODE_MIXING only when a doc that clearly commits
+to one mode substantially embeds a different mode that interrupts its job (e.g.
+a how-to guide that stops to deliver paragraphs of conceptual explanation, or a
+reference table dropped into a tutorial). Minor, brief asides are fine.
+
+Output ONLY this JSON:
+{"primary_mode":"tutorial|how-to|reference|explanation|landing","mode_mixing":true|false,"intruding_mode":"...|","why":"one sentence quoting the intruding section"}
+
+--- DOCUMENT ---

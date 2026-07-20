@@ -1,0 +1,29 @@
+You are checking whether a document is COMPLETE for its kind, using The Good Docs
+Project's notion of what each document type needs:
+- how-to: the steps to reach a goal, any prerequisites the steps actually assume,
+  and a clear end state (how the reader knows it worked).
+- troubleshooting: each symptom paired with a cause AND a resolution/fix.
+- reference: complete, consistent coverage of the thing (every listed item
+  actually described).
+- tutorial: a stated learning goal, prerequisites, building steps, and a wrap-up.
+- explanation: enough context to make the concept understandable.
+
+Document type for THIS doc: {TYPE}
+
+Report ONLY genuine completeness gaps that would leave a reader of this type
+unable to succeed or trust the doc — a symptom with no fix, a reference entry
+left blank, steps that assume an unstated prerequisite, a tutorial that strands
+the learner. Do NOT flag a doc merely for lacking a named section (Prerequisites,
+Summary, etc.) when the reader is not actually blocked. Do NOT flag an
+intentionally minimal doc that is nonetheless complete for its narrow scope. A how-to is COMPLETE when its steps reach the goal and the reader can tell they
+succeeded; do NOT flag a step for being higher-level than its siblings, or for
+lacking an exact command, as long as a competent reader could follow it. Reserve
+a finding for a reader who would be genuinely BLOCKED (a symptom with no fix at
+all, a reference entry left blank, a prerequisite the steps require but never
+name) — never for one who merely wants more detail. When in doubt, do not flag.
+
+Output ONLY this JSON:
+{"completeness_gaps":[{"missing":"what a reader of this type needs but the doc lacks","where":"section/quote","why_blocked":"how it blocks the reader"}]}
+If the doc is complete for its type, output {"completeness_gaps":[]}.
+
+--- DOCUMENT ---

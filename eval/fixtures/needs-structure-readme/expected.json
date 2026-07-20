@@ -1,0 +1,1 @@
+{"lane": "needs-structure", "expect_flag": true, "note": "landing/README: Install section is a 6-command walkthrough in flowing prose, no list. Must NOT be landing-exempt for this check."}

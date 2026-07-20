@@ -7,9 +7,10 @@
     "node": ">=20"
   },
   "dependencies": {
-    "@aj-archipelago/merval": "1.0.7"
+    "@aj-archipelago/merval": "1.0.7",
+    "markdown-it": "14.1.0"
   },
   "scripts": {
-    "test": "node --test --test-reporter=spec contrast.test.mjs lint-mermaid.test.mjs apply-palette.test.mjs validate-palette.test.mjs"
+    "test": "node --test --test-reporter=spec contrast.test.mjs lint-mermaid.test.mjs apply-palette.test.mjs validate-palette.test.mjs check-prose.test.mjs check-refs.test.mjs"
   }
 }

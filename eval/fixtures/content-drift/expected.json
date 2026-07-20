@@ -1,0 +1,12 @@
+{
+  "lane": "content-drift",
+  "planted_drift": [
+    {"id": "timeout", "doc": "default timeout 60 seconds", "code": "DefaultTimeout = 30"},
+    {"id": "retries", "doc": "retries up to 5 times", "code": "maxAttempts = 3"},
+    {"id": "schema", "doc": "myapp.config/v1", "code": "myapp.config/v2"}
+  ],
+  "correct_claims": [
+    {"id": "connect", "doc": "Connect opens a pooled db connection"},
+    {"id": "handlers", "doc": "four handlers auth cache log trace"}
+  ]
+}

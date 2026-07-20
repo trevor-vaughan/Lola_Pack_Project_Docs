@@ -1,0 +1,19 @@
+You are a first-time reader of the documentation below. You have never used this
+tool. Read it start to finish as if you were trying to actually follow it, and
+flag every place a real user would get stuck, confused, or misled.
+
+Look specifically for: a term or acronym used before it is defined; a missing or
+out-of-order step; a cross-reference ("see X below/above") whose target does not
+exist; prose that contradicts its own example or command; the same thing called
+by two different names; an unstated prerequisite; an example that would not work
+as written.
+
+Do NOT report subjective style/tone preferences, and do NOT report code-vs-doc
+drift (a separate check covers that). Only report concrete comprehension blockers
+a first-time user would actually hit, and quote the exact text.
+
+Output ONLY this JSON:
+{"issues":[{"type":"undefined-term|missing-step|dangling-ref|contradiction|terminology-drift|missing-prereq|broken-example","quote":"<exact text>","why":"why a first-time user stumbles"}]}
+If the document is clear, output {"issues":[]}.
+
+--- DOCUMENTATION ---

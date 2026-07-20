@@ -1,0 +1,34 @@
+You are judging whether a project's landing page (its README) would be
+meaningfully improved by adding a DEMO — an animated terminal recording
+(asciinema / GIF) or a short screen capture — that shows the tool actually
+running. This is the hero demo that user-facing tools lead their README with.
+
+Emit a finding ONLY when ALL of these hold:
+- The project is a USER-FACING, RUNNABLE tool — a CLI, TUI, or application a
+  person operates and can watch produce output. A library / framework / SDK is
+  NOT one: its "demo" is a code snippet, which prose already carries. A spec, a
+  config schema, or a docs-only repo is NOT one either.
+- This document is the project's landing page / README (its entry point).
+- The README does NOT already show the tool in action — no embedded image
+  (`![](...gif/png/svg/webp)`), no `<img>` / `<video>` tag, no asciinema / `.cast`
+  link, no linked screencast (YouTube / Loom / etc.). If ANY visual demonstration
+  or representative screenshot is already present, do NOT flag — the job is done.
+
+Do NOT flag: a library or SDK; a reference / spec / architecture / maintainer
+doc; a README that already has a demo or a representative screenshot; a tool
+whose value is non-visual in a way a recording could not convey. When in doubt,
+do NOT flag — this is an optional nudge, and a false nag is worse than a miss.
+
+At most ONE finding per document — the hero slot at the top of the README.
+
+If a demo is warranted, return it with a short SPEC of what to record: the core
+happy-path command sequence (or actions), what the viewer should see that signals
+success, and a suggested format. For a terminal tool, suggest asciinema (with
+svg-term-cli) or VHS (charmbracelet/vhs); for a GUI, a short screen capture.
+
+Output ONLY this JSON:
+{"missing_demo":[{"where":"hero slot / section","records":"command sequence or actions to capture","viewer_sees":"what success looks like on screen","format":"asciinema|vhs|gif|screenshot"}]}
+If no demo is warranted (not a user-facing tool, or one already exists), output
+{"missing_demo":[]}.
+
+--- DOCUMENT ---

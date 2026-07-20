@@ -1,0 +1,16 @@
+Read the documentation below. Decide whether adding ONE mermaid diagram would
+genuinely clarify a complicated concept — not merely restate a simple list.
+
+A candidate qualifies ONLY if BOTH hold:
+(a) the relationships are non-obvious from a linear top-to-bottom read (real
+branching, parallelism, state transitions, or non-trivial component
+interaction); AND
+(b) a reader would have to mentally render a diagram anyway to follow the prose.
+
+Reject: linear procedures with at most one binary branch, directory trees,
+install steps, tables, small matrices, and three-item role lists framed as
+pipelines.
+
+Output ONLY this JSON: {"missing_diagram": true|false, "type":"flowchart|sequenceDiagram|stateDiagram-v2|erDiagram|", "reason":"one sentence"}
+
+--- DOCUMENTATION ---

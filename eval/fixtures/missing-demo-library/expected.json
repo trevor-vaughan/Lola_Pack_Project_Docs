@@ -1,0 +1,1 @@
+{"lane": "missing-demo", "expect_flag": false, "note": "a library/SDK — nothing to watch run; its demo is the code snippet the README already shows. Must not flag."}

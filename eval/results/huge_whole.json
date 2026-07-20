@@ -1,0 +1,142 @@
+{
+  "mode": "whole",
+  "runs": 5,
+  "recall_per_drift": {
+    "timeout": 0.8,
+    "maxconns": 0.8,
+    "retries": 0.8,
+    "upload": 0.8,
+    "workers": 0.8,
+    "port": 0.8,
+    "batch": 0.8,
+    "tokens": 0.8,
+    "schema": 0.8
+  },
+  "mean_recall": 0.8,
+  "consistent_across_runs": false,
+  "found_sets": [
+    [
+      "batch",
+      "maxconns",
+      "port",
+      "retries",
+      "schema",
+      "timeout",
+      "tokens",
+      "upload",
+      "workers"
+    ],
+    [],
+    [
+      "batch",
+      "maxconns",
+      "port",
+      "retries",
+      "schema",
+      "timeout",
+      "tokens",
+      "upload",
+      "workers"
+    ],
+    [
+      "batch",
+      "maxconns",
+      "port",
+      "retries",
+      "schema",
+      "timeout",
+      "tokens",
+      "upload",
+      "workers"
+    ],
+    [
+      "batch",
+      "maxconns",
+      "port",
+      "retries",
+      "schema",
+      "timeout",
+      "tokens",
+      "upload",
+      "workers"
+    ]
+  ],
+  "mean_fp": 0.0,
+  "detail": [
+    {
+      "found": {
+        "timeout": true,
+        "maxconns": true,
+        "retries": true,
+        "upload": true,
+        "workers": true,
+        "port": true,
+        "batch": true,
+        "tokens": true,
+        "schema": true
+      },
+      "fp": 0,
+      "n_findings": 9
+    },
+    {
+      "found": {
+        "timeout": false,
+        "maxconns": false,
+        "retries": false,
+        "upload": false,
+        "workers": false,
+        "port": false,
+        "batch": false,
+        "tokens": false,
+        "schema": false
+      },
+      "fp": 0,
+      "n_findings": 0
+    },
+    {
+      "found": {
+        "timeout": true,
+        "maxconns": true,
+        "retries": true,
+        "upload": true,
+        "workers": true,
+        "port": true,
+        "batch": true,
+        "tokens": true,
+        "schema": true
+      },
+      "fp": 0,
+      "n_findings": 9
+    },
+    {
+      "found": {
+        "timeout": true,
+        "maxconns": true,
+        "retries": true,
+        "upload": true,
+        "workers": true,
+        "port": true,
+        "batch": true,
+        "tokens": true,
+        "schema": true
+      },
+      "fp": 0,
+      "n_findings": 9
+    },
+    {
+      "found": {
+        "timeout": true,
+        "maxconns": true,
+        "retries": true,
+        "upload": true,
+        "workers": true,
+        "port": true,
+        "batch": true,
+        "tokens": true,
+        "schema": true
+      },
+      "fp": 0,
+      "n_findings": 9
+    }
+  ]
+}

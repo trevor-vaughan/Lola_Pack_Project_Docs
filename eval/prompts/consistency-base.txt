@@ -1,0 +1,6 @@
+Review the documentation below for internal inconsistencies or contradictions.
+For each issue, output JSON only:
+{"findings":[{"issue":"short","statement_a":"...","statement_b":"...","label":"contradiction|unsupported-instruction|other"}]}
+If none, output {"findings":[]}.
+
+--- DOCS ---

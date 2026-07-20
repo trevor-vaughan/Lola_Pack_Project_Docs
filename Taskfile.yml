@@ -54,7 +54,7 @@ tasks:
       - lola install docs-discipline -a {{.ASSISTANT}} --scope {{.SCOPE}} {{.CLI_ARGS}}
 
   install:scripts:
-    desc: Install npm dependencies for the docs-organization scripts (merval)
+    desc: Install npm dependencies for the docs-organization scripts (merval + markdown-it)
     cmds:
       - cd module/skills/docs-organization/scripts && npm install
 

@@ -38,13 +38,24 @@ assert_grep '"code": *"MISSING_README"' "$out" "empty repo flags MISSING_README"
 popd > /dev/null
 rm -rf "$dir"
 
-# Test 2: README present, no docs/superpowers gitignore entry
+# Test 2: project uses docs/, no docs/superpowers gitignore entry -> flagged
+dir=$(mktmp); pushd "$dir" > /dev/null
+git init -q
+echo "# Test" > README.md
+mkdir docs; echo "notes" > docs/notes.md
+echo "node_modules/" > .gitignore
+out=$(bash "$SCRIPT" 2>&1 || true)
+assert_grep '"code": *"MISSING_GITIGNORE_SUPERPOWERS"' "$out" "missing superpowers gitignore (docs/ present)"
+popd > /dev/null
+rm -rf "$dir"
+
+# Test 2b: no docs/ dir at all -> the preventive entry is not demanded (no noise)
 dir=$(mktmp); pushd "$dir" > /dev/null
 git init -q
 echo "# Test" > README.md
 echo "node_modules/" > .gitignore
 out=$(bash "$SCRIPT" 2>&1 || true)
-assert_grep '"code": *"MISSING_GITIGNORE_SUPERPOWERS"' "$out" "missing superpowers gitignore"
+assert_grep '"status": *"ok"' "$out" "no docs/ dir -> no superpowers-gitignore blocker"
 popd > /dev/null
 rm -rf "$dir"
 

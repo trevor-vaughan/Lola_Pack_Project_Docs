@@ -1,0 +1,1 @@
+{"lane": "missing-demo", "expect_flag": false, "note": "user-facing CLI, but the README already leads with docs/demo.gif. The job is done; must not flag."}
