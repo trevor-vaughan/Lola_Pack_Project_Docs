@@ -1,0 +1,2 @@
+hooks:
+  post-install: hooks/post-install.sh

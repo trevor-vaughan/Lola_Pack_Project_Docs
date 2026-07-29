@@ -1,0 +1,8 @@
+{
+  "servers": {
+    "demo": {
+      "type": "stdio",
+      "command": "demo-mcp-server"
+    }
+  }
+}

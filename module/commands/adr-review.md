@@ -35,7 +35,7 @@ the subagent prompt — subagents do not inherit your shell variables.
 3. **Dispatch a `general-purpose` subagent** with this self-contained
    prompt (substitute the placeholders before sending):
 
-   ```
+   ```text
    Read the ADR at <absolute path to NNNN-*.md>. Then read the rubric at
    <absolute path to $SKILL_DIR/reference/review-rubric.md>. Apply
    every section of the rubric to the ADR. Reply in under 600 words with

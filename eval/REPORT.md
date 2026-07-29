@@ -91,7 +91,7 @@ diagram value, comprehension, genre) — always grounded, always retry-guarded.
 
 ## Reproduce
 
-```
+```bash
 cd skill/scripts && npm install         # markdown-it + merval
 npm test                                # 80 unit tests
 cd ../../eval
@@ -267,6 +267,7 @@ ships). Verified real.
 
 **lolafy (5 in-scope docs).** `0 blockers, 1 warning, 9 info`. All findings
 distinct and, on spot-check, real:
+
 - README:90 — "Host checks (need only `lola`)" lists `task lint:content`, which
   needs `uvx` — a first-timer hits a failure. Verified.
 - lola-target.md:136 — reference lists 5 assistant keys, but
@@ -291,6 +292,7 @@ it lands.)
 ### review-council (25 docs) — the scale test
 
 `0 blockers, 5 warnings, 13 info`. Verified pass:
+
 - **Scoped itself**: ran the LLM sub-checks only on the 7 real doc files
   (README, 2 SKILL.md, 4 phases/*.md); swept the ~18 persona/pack files with the
   deterministic lanes only, correctly reasoning they are "LLM prompts /

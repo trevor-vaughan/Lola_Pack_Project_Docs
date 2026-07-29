@@ -1,0 +1,4 @@
+title = "betterleaks config for docs-discipline"
+
+[extend]
+useDefault = true

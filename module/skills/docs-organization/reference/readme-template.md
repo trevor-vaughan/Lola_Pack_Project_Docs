@@ -24,7 +24,7 @@ this for? Don't bury the answer.
 
 Expected output:
 
-```
+```text
 # Show what success looks like.
 ```
 

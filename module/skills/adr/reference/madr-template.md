@@ -38,19 +38,19 @@ reasoning that ties to the decision drivers>.
 
 ## Pros and Cons of the Options
 
-### <Option A>
+### `<Option A>`
 
 - Good, because <reason>
 - Good, because <reason>
 - Bad, because <reason>
 - Bad, because <reason>
 
-### <Option B>
+### `<Option B>`
 
 - Good, because <reason>
 - Bad, because <reason>
 
-### <Option C>
+### `<Option C>`
 
 - Good, because <reason>
 - Bad, because <reason>

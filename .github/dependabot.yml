@@ -1,0 +1,21 @@
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: "/"
+    schedule:
+      interval: weekly
+
+  # Despite the ecosystem name, Dependabot's docker file-fetcher matches any
+  # file whose name contains "dockerfile" or "containerfile" (case-insensitive),
+  # so this scans our root `Containerfile`.
+  - package-ecosystem: docker
+    directory: "/"
+    schedule:
+      interval: weekly
+
+  # merval and markdown-it are pinned exactly in the skill's package.json and
+  # ship to end users, so they need an update path.
+  - package-ecosystem: npm
+    directory: "/module/skills/docs-organization/scripts"
+    schedule:
+      interval: weekly

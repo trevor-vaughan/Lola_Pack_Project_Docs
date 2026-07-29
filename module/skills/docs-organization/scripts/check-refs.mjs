@@ -27,7 +27,7 @@
 // Exit 0 = no findings, 1 = findings, 2 = internal error. Uses execFileSync
 // (no shell) with fixed git arguments.
 
-import MarkdownIt from 'markdown-it';
+import MarkdownIt from './vendor/markdown-it.mjs';
 import { readFileSync, existsSync, statSync, readdirSync } from 'node:fs';
 import { execFileSync } from 'node:child_process';
 import { dirname, resolve, relative, join } from 'node:path';

@@ -1,7 +1,7 @@
 import { contrastRatio } from './contrast.mjs';
+import { validateMermaid } from './vendor/merval.mjs';
 import { readFileSync, statSync, readdirSync } from 'node:fs';
-import { join, dirname } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { join } from 'node:path';
 
 const LIGHT_BG = '#ffffff';
 const DARK_BG = '#1e1e1e';
@@ -17,26 +17,6 @@ const LLM_CONFIG_BASENAMES = new Set([
 ]);
 const CONTRAST_TEXT = 4.5;   // WCAG AA for text
 const CONTRAST_BG = 3.0;     // WCAG threshold for non-text graphical objects
-
-// Lazy-load merval. When the pack is installed into someone's AI assistant
-// via `lola install`, node_modules/ won't be present until they run
-// `npm install` in the scripts directory. Return null in that case so the
-// caller can emit a helpful error instead of crashing on import.
-let _validateMermaid;
-async function getValidateMermaid() {
-  if (_validateMermaid !== undefined) return _validateMermaid;
-  try {
-    const mod = await import('@aj-archipelago/merval');
-    _validateMermaid = mod.validateMermaid;
-  } catch {
-    _validateMermaid = null;
-  }
-  return _validateMermaid;
-}
-
-function scriptsDir() {
-  return dirname(fileURLToPath(import.meta.url));
-}
 
 export function extractInitBlock(source) {
   const m = /%%\{\s*init\s*:\s*([\s\S]*?)\}%%/.exec(source);
@@ -82,19 +62,6 @@ export function extractClassDefs(source) {
 
 export async function lintDiagram(source) {
   const findings = [];
-
-  const validateMermaid = await getValidateMermaid();
-  if (!validateMermaid) {
-    findings.push({
-      code: 'MERVAL_NOT_INSTALLED',
-      severity: 'blocker',
-      message:
-        'The merval package is required but not installed. From the ' +
-        `docs-organization scripts directory (${scriptsDir()}) run: ` +
-        'npm install',
-    });
-    return findings;
-  }
 
   const v = validateMermaid(source);
   if (!v.isValid) {

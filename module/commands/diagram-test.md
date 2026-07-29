@@ -51,7 +51,7 @@ otherwise makes ER edge labels invisible on dark page backgrounds. Render
 against both `white` and `#1e1e1e` for any palette except Parchment
 (light-bg only):
 
-```
+```bash
 mmdc -i <file>.mmd -o <file>.light.png -b white --cssFile $SKILL_DIR/reference/palettes/er-overrides.css
 mmdc -i <file>.mmd -o <file>.dark.png  -b "#1e1e1e" --cssFile $SKILL_DIR/reference/palettes/er-overrides.css
 ```
@@ -62,8 +62,3 @@ federation,citrus,parchment}.json` for reference.
 ## Stop conditions
 
 - If the script exits 2 (internal error): surface the error.
-- If a finding has code `MERVAL_NOT_INSTALLED`: surface the finding's
-  message verbatim (it includes the exact `npm install` command and
-  the directory to run it in). The user needs to install the npm
-  dependency before /diagram-test can do anything useful — this
-  typically happens once after a fresh `lola install` of the pack.

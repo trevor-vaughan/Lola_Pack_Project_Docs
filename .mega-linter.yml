@@ -1,0 +1,21 @@
+APPLY_FIXES: none
+DEFAULT_BRANCH: main
+DISABLE_ERRORS: false
+VALIDATE_ALL_CODEBASE: true
+ENABLE_LINTERS:
+  - MARKDOWN_MARKDOWNLINT
+  - YAML_YAMLLINT
+  - BASH_SHELLCHECK
+  - REPOSITORY_BETTERLEAKS
+  - REPOSITORY_TRIVY
+  - REPOSITORY_SECRETLINT
+SHOW_ELAPSED_TIME: true
+MARKDOWN_MARKDOWNLINT_CONFIG_FILE: .markdownlint.yml
+YAML_YAMLLINT_CONFIG_FILE: .yamllint.yml
+# eval/results holds captured JSON from prior evaluation runs, regenerable and
+# not authored content. eval/fixtures holds deliberately-defective documents
+# used as /docs-audit ground truth; linting them would defeat their purpose.
+# scripts/vendor/ holds generated esbuild bundles of third-party MIT code.
+# Linting them reports on upstream's style, not ours, and the findings are not
+# actionable here — the fix would be upstream or a rebuild.
+FILTER_REGEX_EXCLUDE: '(eval/results/|eval/fixtures/|tests/fixtures/|megalinter-reports/|node_modules/|scripts/vendor/)'

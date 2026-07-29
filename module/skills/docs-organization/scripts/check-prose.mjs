@@ -23,7 +23,7 @@
 // distinguished by node type, so wrapped list bodies and indented code never
 // masquerade as paragraphs (the false-positive class a hand-rolled scanner hits).
 
-import MarkdownIt from 'markdown-it';
+import MarkdownIt from './vendor/markdown-it.mjs';
 import { readFileSync, statSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 

@@ -155,13 +155,7 @@ test('extractMermaidBlocks: returns empty for .md with no mermaid blocks', () =>
   assert.deepEqual(extractMermaidBlocks('# Just prose\nNo diagrams.', 'foo.md'), []);
 });
 
-// --- defensive: missing merval ---
-// Verify the script can still be invoked when merval isn't installed.
-// Node walks parent directories looking for node_modules, so we copy
-// the scripts to a sibling tempdir under /tmp (which has no
-// node_modules anywhere in its parent chain) and run there.
-import { execFileSync } from 'node:child_process';
-import { mkdtempSync, copyFileSync, rmSync, mkdirSync, writeFileSync } from 'node:fs';
+import { mkdtempSync, rmSync, mkdirSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 
 // --- scope: walk() excludes agent-runtime spaces ---
@@ -216,82 +210,6 @@ test('walk: still returns explicit file even if its basename is LLM-config', () 
     writeFileSync(explicit, '# explicitly requested');
     const files = walk(explicit);
     assert.deepEqual(files, [explicit]);
-  } finally {
-    rmSync(work, { recursive: true, force: true });
-  }
-});
-
-// Set up an isolated copy of the linter under a parent chain that has no
-// node_modules anywhere, then invoke it with the given extra args. Returns
-// the captured stdout and exit code. The work dir is cleaned up by the
-// caller's finally block.
-//
-// Extracted because the merval-not-installed code path needs the same
-// fixture for its structured-output and human-output tests.
-function runWithoutMerval(work, extraArgs = []) {
-  copyFileSync(join(here, 'lint-mermaid.mjs'), join(work, 'lint-mermaid.mjs'));
-  copyFileSync(join(here, 'contrast.mjs'), join(work, 'contrast.mjs'));
-  mkdirSync(join(work, '__fixtures__'));
-  copyFileSync(
-    join(here, '__fixtures__', 'good.mmd'),
-    join(work, '__fixtures__', 'good.mmd'),
-  );
-
-  let stdout = '';
-  let exitCode = 0;
-  try {
-    stdout = execFileSync(
-      'node',
-      [join(work, 'lint-mermaid.mjs'), ...extraArgs, join(work, '__fixtures__', 'good.mmd')],
-      { cwd: work, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] },
-    );
-  } catch (e) {
-    stdout = e.stdout?.toString() ?? '';
-    exitCode = e.status ?? 1;
-  }
-  return { stdout, exitCode };
-}
-
-test('CLI emits MERVAL_NOT_INSTALLED when the package is unresolvable', () => {
-  // Asserts the structured contract via --json so the test does not
-  // depend on terminal wrap behavior (which is a function of the
-  // tmpdir() path length and varies across machines).
-  const work = mkdtempSync(join(tmpdir(), 'lint-mermaid-test-'));
-  try {
-    const { stdout, exitCode } = runWithoutMerval(work, ['--json']);
-    assert.equal(exitCode, 1);
-
-    const report = JSON.parse(stdout);
-    assert.equal(report.status, 'findings');
-    assert.equal(report.blockerCount, 1);
-    assert.equal(report.results.length, 1);
-
-    const finding = report.results[0].findings[0];
-    assert.equal(finding.code, 'MERVAL_NOT_INSTALLED');
-    assert.equal(finding.severity, 'blocker');
-    // Raw (unwrapped) message must contain the actionable command and
-    // point at the directory where it should be run.
-    assert.match(finding.message, /npm install/);
-    assert.ok(
-      finding.message.includes(work),
-      `message should reference the scripts directory, got: ${finding.message}`,
-    );
-  } finally {
-    rmSync(work, { recursive: true, force: true });
-  }
-});
-
-test('CLI human output for MERVAL_NOT_INSTALLED keeps the npm install guidance readable', () => {
-  // The human formatter wraps at ~76 cols, which can split atomic
-  // command strings across lines depending on the absolute path of
-  // the temp dir. The assertion is whitespace-tolerant so it locks in
-  // "the words appear in order" without being coupled to wrap point.
-  const work = mkdtempSync(join(tmpdir(), 'lint-mermaid-test-'));
-  try {
-    const { stdout, exitCode } = runWithoutMerval(work);
-    assert.equal(exitCode, 1);
-    assert.match(stdout, /MERVAL_NOT_INSTALLED/);
-    assert.match(stdout, /npm\s+install/);
   } finally {
     rmSync(work, { recursive: true, force: true });
   }

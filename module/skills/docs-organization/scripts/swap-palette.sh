@@ -14,7 +14,12 @@ PALETTE_DIR="$SCRIPT_DIR/../reference/palettes"
 PALETTE_JSON="$PALETTE_DIR/${PALETTE}.json"
 
 if [[ ! -f "$PALETTE_JSON" ]]; then
-  echo "unknown palette: $PALETTE — available: $(ls "$PALETTE_DIR"/*.json | xargs -n1 basename | sed 's/\.json$//' | paste -sd, -)" >&2
+  AVAILABLE=()
+  for p in "$PALETTE_DIR"/*.json; do
+    [[ -e "$p" ]] || continue
+    AVAILABLE+=("$(basename "$p" .json)")
+  done
+  echo "unknown palette: $PALETTE — available: $(IFS=,; echo "${AVAILABLE[*]}")" >&2
   exit 2
 fi
 if [[ ! -f "$INPUT" ]]; then

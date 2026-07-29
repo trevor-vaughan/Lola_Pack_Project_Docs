@@ -1,6 +1,6 @@
 ---
 name: docs-organization
-description: Use ONLY when the user explicitly invokes /docs-init, /docs-audit, /docs-update, or /diagram-test. Not triggered by conversation about documentation, README files, docs structure, or diagrams.
+description: DO NOT AUTO-INVOKE. Use ONLY when the user explicitly invokes /docs-init, /docs-audit, /docs-update, or /diagram-test. Not triggered by conversation about documentation, README files, docs structure, or diagrams.
 ---
 
 # docs-organization
@@ -45,8 +45,8 @@ describes the project itself. When enumerating documentation files (in
 
 - `README.md` at the repository root.
 - Every `.md` under `docs/`.
-- For skill-pack repositories: every `.md` under `module/` that ships as
-  part of the pack (`module/skills/*/SKILL.md`, `module/commands/*.md`,
+- For lola module repositories: every `.md` under `module/` that ships as
+  part of the module (`module/skills/*/SKILL.md`, `module/commands/*.md`,
   `module/skills/*/reference/*.md`).
 
 **Exclude unconditionally:**
@@ -128,38 +128,17 @@ Requires Node.js ≥20 and two npm deps (`@aj-archipelago/merval`,
 
 ### Deterministic where it's unambiguous, LLM where it's fuzzy
 
-Size is a mechanical property: a paragraph's *word count*, a bullet's word count,
-a file's or section's *line span*. Those are exact and reproducible, so
-`check-prose.mjs` triggers on them alone — reading the markdown-it AST (fenced
-code, tables, blockquotes, and nested lists distinguished by node type, not
-regex) and enumerating byte-identically every run. An LLM asked to *enumerate*
-readability problems under-reports on long files (recall fades toward the end)
-and two runs disagree, so enumeration is the script's job.
+Size is mechanical, so `check-prose.mjs` owns enumeration (`WALL_OF_TEXT`,
+`DENSE_BULLET`, `SPLIT_CANDIDATE`) and repeats it identically every run; an LLM
+asked to enumerate under-reports on long files. The LLM lane adjudicates only
+the candidates the script surfaces: choppy rhythm, and dense-prose *genres*
+(academic, legal, formal spec) where `WALL_OF_TEXT` should be suppressed. A
+procedure spread across many small blocks trips no size check but is
+absence-of-structure, so it belongs to the grounded `NEEDS_STRUCTURE` sub-check
+in Lane 5.
 
-What the script deliberately does **not** do is count sentences. Sentence
-segmentation is a genuinely hard NLP problem — abbreviations (`e.g.`, `i.e.`,
-`vs.`), decimals, initials, ellipses — that no regex gets right; a sentence
-counter false-flags abbreviation-heavy technical prose. So the fuzzy judgments
-are deferred to the LLM lane, which only ever adjudicates the candidates the
-script surfaces: is the rhythm choppy, and is this a dense-prose *genre*
-(academic paper, legal text, formal spec) where a `WALL_OF_TEXT` finding should
-be suppressed. Deterministic backbone; LLM for the judgment residue.
-
-`DENSE_BULLET` exists because the wall-of-text rule deliberately excludes lists,
-so a 150-word flat bullet slips past it. A bullet already broken into
-sub-bullets is the desired shape and is never flagged, however long overall.
-
-Every deterministic check above measures the size of a *single* block. The
-complementary axis is a procedure spread across *many small* blocks — prose
-interleaved with back-to-back command fences, no paragraph long enough to trip
-`WALL_OF_TEXT`, no list to trip `DENSE_BULLET`, short enough to duck
-`SPLIT_CANDIDATE` — yet with no list or sub-headings to give the eye a rest
-point. That is absence-of-structure, not size, so it is judged by the grounded
-`NEEDS_STRUCTURE` sub-check in Lane 5 rather than by `check-prose.mjs`. It fires
-only on procedural runs (a command-by-command walkthrough, including a README
-Install/Quickstart — this one is **not** landing-exempt), and never on
-already-listed steps, a short one-or-two-command run, or non-procedural prose.
-(Validated 25/25 on eval fixtures.)
+Why each signal sits where it does:
+`$SKILL_DIR/reference/deterministic-vs-llm.md`.
 
 ### References should be followable
 
@@ -179,38 +158,19 @@ false positives.
 
 ### Ground the review in Diátaxis, then cold-read it
 
-Every LLM lane runs better knowing what the document is *for*. A one-line
-grounding pass classifies the file's [Diátaxis](https://diataxis.fr) mode —
-`tutorial`, `how-to`, `reference`, `explanation`, or `landing` (a README/entry
-page, legitimately multi-mode) — plus audience and reader-goal, and threads it
-into the content-drift, missing-diagram, cold-read, and structure prompts. The mode makes
-the other lanes' judgments principled rather than ad hoc: dense unbroken prose
-is a convention in `reference`/`explanation` but a defect in `tutorial`/`how-to`;
-"would a reader get stuck" is a tutorial/how-to question, while `reference` is
-judged on completeness. Grounding also emits `MODE_MIXING` (info) when a
-non-`landing` doc commits to one mode but embeds another that interrupts its job
-(a how-to that detours into pages of concept). It is a **lens, not a law**: a
-`landing` page is never flagged for mixing, and the finding is info-level — the
-framework guides, it does not dictate. (Validated: 5/5 consistent on eval
-fixtures, correctly exempting the landing page.)
+Three LLM lanes judge a document by what it is *for*. A **grounding** pass
+classifies the file's [Diátaxis](https://diataxis.fr) mode (`tutorial`,
+`how-to`, `reference`, `explanation`, or `landing`) plus audience and
+reader-goal, threads that into the other prompts, and emits `MODE_MIXING` when
+a non-`landing` doc embeds a mode that interrupts its job. The **cold read**
+reads the doc as its intended audience and flags where a real reader gets
+stuck. The **completeness** check (`INCOMPLETE_FOR_TYPE`) asks whether a reader
+of that type would be blocked by something the doc omits. All three are
+info-level: the framework guides, it does not dictate.
 
-The **cold read** is the lane none of the narrow checks cover: read the doc as
-the intended audience and flag where a real reader gets stuck — an undefined
-term, a missing step, a dangling "see below", prose that contradicts its own
-example, terminology that drifts, an unstated prerequisite, a spec citation the
-reader can't resolve. Measured on the eval fixture it is high-precision (0
-spurious findings, 4/5 planted traps caught), so its findings are treated as
-real but kept info-level.
-
-A companion **completeness** check (`INCOMPLETE_FOR_TYPE`) uses
-[The Good Docs Project](https://www.thegooddocsproject.dev) notion of what each
-Diátaxis type needs — a troubleshooting doc pairs every symptom with a
-resolution, a reference describes every listed entry, a how-to names the
-prerequisites its steps assume. It is **not** a section-checklist: it fires only
-for a reader who would be *blocked*, never for a missing named heading, and
-never on a `landing` page. That guard is load-bearing — without it the check
-nagged even a complete how-to (0/5); with it, 20/20 on the eval (full recall on
-real gaps, zero nagging on complete or intentionally-minimal docs).
+Why each lane is shaped that way, what it measured on the eval fixtures, and
+the guards that keep it from nagging:
+`$SKILL_DIR/reference/diataxis-grounding.md`.
 
 ### Never read an empty LLM lane as "clean"
 
@@ -222,26 +182,21 @@ The command procedure therefore validates every subagent reply, retries an
 empty/errored one up to twice, and records a `LANE_FAILED` **Warning** if it
 still yields nothing. An unaudited file is "unknown", never "clean".
 
-**First-run setup after `lola install`.** lola installs the pack files but
-does not run `npm install`. The first invocation of `/diagram-test` after
-a fresh pack install will emit a `MERVAL_NOT_INSTALLED` blocker finding
-that names the exact directory and command needed. Surface the finding's
-message verbatim to the user — it tells them precisely what to run.
-
-For pack developers, `task install` runs both the lola install and the
-npm install in one step.
-
 ## References
 
 - `reference/mermaid-house-style.md` — palette, init header, examples,
   and **merval syntax constraints** (the strict-subset gotchas every
   diagram in this project must follow; consult before scaffolding).
+- `reference/diataxis-grounding.md` — why the grounding, cold-read, and
+  completeness lanes are shaped as they are, and what each measured.
+- `reference/deterministic-vs-llm.md` — why each readability signal is owned
+  by `check-prose.mjs` or by an LLM lane, and the guards on each.
 - `reference/readme-template.md` — minimum acceptable README structure.
 - `reference/docs-tree-template.md` — `docs/dev/` scaffold.
 
 ## Cross-skill
 
 This skill does not touch ADRs directly. The companion `adr` skill (same
-pack) owns `docs/dev/adr/` content via `/adr-new` and `/adr-review`. The
-two skills share knowledge of the `docs/` layout but have separate
+module) owns `docs/dev/adr/` content via `/adr-new` and `/adr-review`.
+The two skills share knowledge of the `docs/` layout but have separate
 responsibilities.

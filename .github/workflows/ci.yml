@@ -1,0 +1,64 @@
+name: ci
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+permissions:
+  contents: read
+jobs:
+  megalinter:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - name: MegaLinter
+        uses: oxsecurity/megalinter@v9
+        env:
+          VALIDATE_ALL_CODEBASE: true
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  gates:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7
+
+      - name: Install Task
+        uses: arduino/setup-task@v3
+        with:
+          version: 3.x
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: '20'
+
+      - name: Install bats
+        run: sudo apt-get update && sudo apt-get install -y bats
+
+      - name: Install lola
+        run: uv tool install --python 3.13 "git+https://github.com/LobsterTrap/lola@v0.7.0"
+
+      - name: Install Venom
+        run: |
+          curl -fsSL -o /tmp/venom \
+            https://github.com/ovh/venom/releases/latest/download/venom.linux-amd64
+          sudo install -m 0755 /tmp/venom /usr/local/bin/venom
+
+      - name: Rebuild vendored bundles
+        run: task vendor
+
+      # A committed bundle that does not match the version package.json pins is
+      # a silent supply-chain drift. Rebuilding and diffing turns it into a
+      # build failure. Dependabot bumps land red here until rebuilt — intended.
+      - name: Vendored bundles match the pinned versions
+        run: git diff --exit-code module/skills/docs-organization/scripts/vendor/
+
+      - name: Quality gates
+        run: task check MODE=llm
+
+      - name: Container cleanroom
+        run: task cleanroom MODE=llm

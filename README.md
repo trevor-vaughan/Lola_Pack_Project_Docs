@@ -1,6 +1,6 @@
 # docs-discipline
 
-A [lola](https://docs.getlola.dev/) pack with two skills for keeping
+A [lola](https://lobstertrap.org/lola/) module with two skills for keeping
 technical project documentation on track, current, and consistent. Nothing
 auto-invokes — every behavior is reached through an explicit slash command.
 
@@ -29,46 +29,44 @@ Behavior reaches the agent only through six explicit slash commands:
 
 ## Install
 
-```bash
-# Install lola (one time):
-uv tool install git+https://github.com/LobsterTrap/lola
-
-# Install this pack:
-task install                                      # default: claude-code, user scope
-task install ASSISTANT=opencode          # install for OpenCode
-task install SCOPE=project    # opt into project scope
-task install -- -f    # force-overwrite after edits
-```
-
-Requirements: git, Node.js ≥20, bash, lola.
-
-`task install` runs **two** steps:
-
-1. `install:scripts` — `npm install` inside
-   `module/skills/docs-organization/scripts/`, so the project's own
-   `task test:diagrams` and `task lint` work locally.
-2. `install:lola` — `lola mod add` + `lola install`.
-
-**Note on npm deps at install time.** Lola excludes `node_modules/` from
-the install (it's in its built-in `ALWAYS_IGNORE` list). The scripts need
-two deps — `@aj-archipelago/merval` (mermaid lint) and `markdown-it`
-(the `/docs-audit` prose and reference lanes) — both installed by one
-`npm install` in the installed `scripts/` dir. On first `/diagram-test`
-invocation after `task install`, the skill detects missing `merval` and
-surfaces a `MERVAL_NOT_INSTALLED` finding with the exact path and command
-to run; `/docs-audit` likewise surfaces a one-time install prompt if
-`markdown-it` is missing. That one-shot user step is the supported
-workflow.
-
-Uninstall mirrors install:
+Install [lola](https://lobstertrap.org/lola/) once:
 
 ```bash
-task uninstall                                    # full inverse
+uv tool install git+https://github.com/LobsterTrap/lola@v0.7.0
 ```
+
+Register and install this module:
+
+```bash
+lola mod add -n docs-discipline https://github.com/<owner>/lola-mod-project-docs
+lola install docs-discipline -a claude-code --scope user
+```
+
+`lola install` prompts for assistant and scope when you omit them. Scripted:
+
+```bash
+lola install docs-discipline -a opencode --scope user -f
+lola install docs-discipline -a claude-code --scope project -f
+```
+
+Uninstall mirrors it:
+
+```bash
+lola uninstall docs-discipline -a claude-code --scope user -f
+lola mod rm -f docs-discipline
+```
+
+That is the whole install. The skill's two npm dependencies
+(`@aj-archipelago/merval` for mermaid validation, `markdown-it` for the
+`/docs-audit` prose and reference lanes) ship pre-bundled inside the module, so
+there is no `npm install`, no network access needed after `lola install`, and no
+follow-up step.
+
+Requirements: git, Node.js ≥ 20, bash, lola ≥ 0.5.0.
 
 ## Quickstart
 
-In a project with the pack installed:
+In a project with the module installed:
 
 ```bash
 /docs-init                                        # scaffold README, docs/, .gitignore
@@ -113,26 +111,35 @@ task palette -- citrus path/to/diagram.mmd        # swap palette on an existing 
 
 ## Project structure
 
+```text
+module/AGENTS.md                            module instructions, injected at install
+module/skills/docs-organization/SKILL.md    the docs-organization skill
+module/skills/docs-organization/scripts/    node + bash helpers (lint-mermaid.mjs, check-structure.sh, …)
+module/skills/docs-organization/scripts/vendor/  pre-built MIT dependency bundles that ship with the skill
+module/skills/docs-organization/reference/  house-style references, README/docs templates, palettes
+module/skills/adr/SKILL.md                  the adr skill
+module/skills/adr/scripts/adr-index.sh      regenerates the ADR index
+module/skills/adr/reference/                MADR 4.0 template + review rubric
+module/commands/                            the six slash commands
+Taskfile.yml                                developer workflow
+.taskfiles/scripts/                         shared quality-gate scripts
+tests/diagrams/                             mermaid fixtures, one per diagram type
+tests/e2e/                                  Venom end-to-end suite
+tests/fixtures/                             deliberately-broken modules for the structural linter
+tests/lint-structure.bats                   tests for the structural linter
+tests/verify-oracle.bats                    tests for the install oracle
+eval/                                       /docs-audit lane evaluation (maintainer research)
+.github/workflows/                          CI and release
 ```
-module/AGENTS.md                                       # lola module manifest
-module/skills/docs-organization/SKILL.md               # docs-organization skill
-module/skills/docs-organization/scripts/               # node + bash helpers (lint-mermaid.mjs, check-structure.sh, …)
-module/skills/docs-organization/reference/             # house-style references, README/docs templates
-module/skills/adr/SKILL.md                             # adr skill
-module/skills/adr/scripts/                             # adr-index.sh
-module/skills/adr/reference/                           # MADR 4.0 template + review rubric
-module/commands/{docs-init,docs-audit,docs-update,diagram-test,adr-new,adr-review}.md
-Taskfile.yml                                           # install / uninstall / dev workflow
-.taskfiles/                                            # task automation modules
-tests/                                                 # bash + node unit tests, venom e2e
-.github/workflows/                                     # CI
-```
+
+Unit tests live beside the code they cover: `*.test.mjs` and `*.test.sh` in
+`module/skills/*/scripts/`.
 
 ## Where to go next
 
 - **For maintainers/contributors:** `AGENTS.md` at the repo root.
-- **For the lola pack format:** see https://docs.getlola.dev/
-- **For MADR:** see https://adr.github.io/madr/
+- **For the lola module format:** see <https://lobstertrap.org/lola/>
+- **For MADR:** see <https://adr.github.io/madr/>
 
 ## License
 

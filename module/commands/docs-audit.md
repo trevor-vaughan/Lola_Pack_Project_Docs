@@ -60,7 +60,7 @@ hardcode `.claude/skills/...` or search candidate paths.
 4. **Lane 3 — Readability and size (fast, deterministic):**
    - Enumerate project documentation files per the scope rules in
      `$SKILL_DIR/SKILL.md` (§ "Scope of audit"): `README.md`, every `.md`
-     under `docs/`, and (for skill-pack repos) project-shipped docs under
+     under `docs/`, and (for lola module repos) project-shipped docs under
      `module/`. **Exclude** `.gitignore`-matched paths, dot-directories
      (`.git/`, `.claude/`, `.opencode/`, `.lola/`, etc.), and LLM-config
      files (`CLAUDE.md`, `AGENTS.md`, `GEMINI.md`, `.cursorrules`). Use the
@@ -118,7 +118,7 @@ hardcode `.claude/skills/...` or search candidate paths.
 6. **Lane 5 — Grounding, content, diagram, and cold-read (slow, subagent-driven, validated):**
    - **Grounding first (one short subagent per file).** Before the narrow
      checks, establish what the document is *for*, grounded in the Diátaxis
-     framework (https://diataxis.fr): "Read <file>. In under 70 words state
+     framework (<https://diataxis.fr>): "Read <file>. In under 70 words state
      (a) its primary Diátaxis mode — `tutorial` (learning), `how-to` (a task),
      `reference` (facts/tables), `explanation` (concepts/why), or `landing`
      (a README/entry page, legitimately multi-mode); (b) its intended audience;
@@ -339,17 +339,16 @@ hardcode `.claude/skills/...` or search candidate paths.
 
 A run against a small project part-way through cleanup might report:
 
-`3 blockers, 1 warning, 3 info`
+`2 blockers, 1 warning, 3 info`
 
-**Blockers**
+### Blockers
 
 | Code | File | Line | Note |
 |------|------|------|------|
 | `MISSING_GITIGNORE_SUPERPOWERS` | `.gitignore` | — | add `docs/superpowers/` |
-| `MERVAL_NOT_INSTALLED` | — | — | run `npm install` in the installed `scripts/` dir |
 | `MISSING_HOUSE_STYLE_HEADER` | `docs/dev/diagrams/pipeline.mmd` | 1 | prepend the Solar init header |
 
-**Warnings**
+### Warnings
 
 | Code | File | Line | Note |
 |------|------|------|------|
@@ -357,7 +356,7 @@ A run against a small project part-way through cleanup might report:
 | `REF_BROKEN` | `docs/dev/architecture.md` | 84 | link to `internal/gone.go` — no such file; repoint or link real target |
 | `REF_NOT_IN_GIT` | `README.md` | 30 | link to `docs/private/spec.md` — exists but gitignored; commit or mark external |
 
-**Info**
+### Info
 
 | Code | File | Line | Note |
 |------|------|------|------|
