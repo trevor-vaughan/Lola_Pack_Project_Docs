@@ -1,0 +1,40 @@
+# skillsaw configuration
+# https://github.com/stbenjam/skillsaw
+#
+# `task lint:content` runs `skillsaw lint --strict` repo-wide, so this excludes
+# directories that are not authored module content:
+#   - tests/fixtures/**  — intentionally-invalid modules exercised by
+#     tests/lint-structure.bats; they must stay broken to prove the linter
+#     catches them.
+#   - eval/fixtures/**   — deliberately-defective documents used as ground
+#     truth by the /docs-audit evaluation harness.
+#   - scripts/vendor/**  — generated esbuild bundles of third-party MIT code.
+#   - lola install destinations (`.claude/`, `.opencode/`, `.cursor/`,
+#     `.gemini/`, `.openclaw/`) and the registry cache (`.lola/`) — generated
+#     install output, not source. They are all gitignored, so grading them
+#     makes the gate depend on whether the machine has run an install: a clean
+#     CI checkout has no `.claude/`, a developer's does, and the two graded
+#     differently. Excluding them makes the findings and the grade identical
+#     either way. Note that repo-type detection is directory presence only and
+#     ignores this list, so a machine that has installed still *reports*
+#     `dot-claude` (and `promptfoo`, from a fixture in the `.lola/` cache);
+#     that only turns extra rules on, and they now have nothing to grade.
+#
+# module/ is NOT excluded and must pass on its own merits.
+#
+# `version` must track the skillsaw ruleset you want enforced. Without it,
+# skillsaw assumes 0.6.0 and silently disables every rule added since, which is
+# a far weaker gate than it looks. The linter runs as `skillsaw@latest`, so keep
+# this in sync with whatever that currently resolves to.
+version: "0.17.0"
+
+exclude:
+  - "tests/fixtures/**"
+  - "eval/fixtures/**"
+  - "module/skills/docs-organization/scripts/vendor/**"
+  - ".claude/**"
+  - ".opencode/**"
+  - ".cursor/**"
+  - ".gemini/**"
+  - ".openclaw/**"
+  - ".lola/**"

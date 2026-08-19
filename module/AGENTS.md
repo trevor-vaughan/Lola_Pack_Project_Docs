@@ -1,10 +1,10 @@
 # docs-discipline
 
-A lola pack with two skills for keeping technical project documentation on
-track, current, and consistent. Nothing in this pack auto-invokes — every
-behavior is reached through an explicit slash command.
+A lola module with two skills for keeping technical project documentation
+on track, current, and consistent. Nothing in this module auto-invokes —
+every behavior is reached through an explicit slash command.
 
-## When to use this pack
+## When to use this module
 
 - **Starting a new project:** `/docs-init` scaffolds README, docs/dev/, and
   the `.gitignore` entry for `docs/superpowers/`.
@@ -21,7 +21,7 @@ behavior is reached through an explicit slash command.
   Architectural Decision Record. `/adr-review <NNNN>` runs an
   independent rubric pass via a context-isolated subagent.
 
-## Two skills in this pack
+## Two skills in this module
 
 - **docs-organization** — README and `docs/` layout, drift detection,
   mermaid authoring and testing. See `skills/docs-organization/SKILL.md`.
@@ -30,7 +30,7 @@ behavior is reached through an explicit slash command.
 
 The skills are independent. Use one without the other if you prefer.
 
-## Conventions this pack enforces
+## Conventions this module enforces
 
 1. Top-level `README.md` is always self-sufficient for basic user
    onboarding.
@@ -44,7 +44,7 @@ The skills are independent. Use one without the other if you prefer.
 
 ## Requirements
 
-- Git (the pack assumes you are operating in a git repository).
+- Git (the module assumes you are operating in a git repository).
 - Node.js ≥20 for the mermaid linter.
 - Bash for the structure/staleness/index scripts.
 
@@ -81,6 +81,7 @@ one beat at a time. This is broader than whitespace-only reflow — restructurin
 into bullets is expected when a paragraph lists several distinct points.
 
 **Cut the tells.** Prefer plain verbs and concrete nouns. Watch for and remove:
+
 - Booster adverbs and brochure verbs: "actively", "simply", "seamlessly",
   "leverage", "robust", "comprehensive", "powerful", "effortlessly".
 - Formulaic scaffolds: "It's worth noting that…", "In order to…" (use "to"),
@@ -109,4 +110,5 @@ them when you touch this section.
   conventions for docs that stay maintained.
 - [Mermaid](https://mermaid.js.org/) — full diagram grammar; the house style is
   a strict subset (see the mermaid house-style reference).
-- [lola](https://docs.getlola.dev/) — the cross-host pack format this ships as.
+- [lola](https://lobstertrap.org/lola/) — the cross-host module format this
+  ships as.

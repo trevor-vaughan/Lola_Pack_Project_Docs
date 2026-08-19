@@ -62,7 +62,7 @@ installed `scripts/` dir.
 
 ## Install (deliverable is source; regenerate `node_modules`)
 
-```
+```bash
 cp -r skill/*      <installed-skill-dir>/        # SKILL.md, reference/, scripts/
 cp    commands/*   <host-commands-dir>/          # docs-audit.md, docs-update.md, docs-init.md
 cd <installed-skill-dir>/scripts && npm install  # markdown-it + merval
@@ -81,15 +81,18 @@ word-based (`paragraphWords` 120, `bulletWords` 90) plus size (`fileLines` 600,
 `sectionLines` 250). Also fixed an O(n²) token scan.
 
 **New file: `check-refs.mjs` (+ test).** Reference integrity:
+
 - `REF_BROKEN` / `REF_NOT_IN_GIT` — a markdown link that doesn't resolve to a
   git-tracked file.
 - `UNLINKED_REF` — a `§` section citation with no link (a deterministic tell for
   an unfollowable reference; fix by linking, never by stripping the `§`).
+
 Scoped to markdown links + git-tracked docs only. Inline-code source-path
 resolution was tried and removed (1478→6 findings on polypkg once corrected);
 it's not cleanly deterministic.
 
 **New LLM lanes (validated in eval): grounding + cold-read.**
+
 - A per-file grounding pass (purpose / audience / reader-goal) threaded into
   every LLM lane so each judges for the intended audience.
 - A `COLD_READ` lane: read the doc as that audience, flag comprehension blockers
@@ -120,6 +123,7 @@ perfectly consistent** across 5 fixtures (see `eval/REPORT.md` Round 8,
 `eval/run_needsstructure.py`).
 
 **Self-drift fixes (the skill's own docs failed its own audit).**
+
 - Test count stated three ways (`72/72`, `78`, `78/78`) — pinned the install
   instruction to the real `npm test` result (**80 passing**).
 - `docs-update.md` said "run /docs-audit's three lanes inline" — stale since the

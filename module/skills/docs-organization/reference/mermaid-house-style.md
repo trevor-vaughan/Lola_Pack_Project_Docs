@@ -35,7 +35,7 @@ fixed list (use a table), an isolated concept (use prose).
 Paste this at the top of every `.mmd` file and every fenced ` ```mermaid `
 block:
 
-```
+```text
 %%{init: {'theme': 'base', 'themeVariables': {
   'primaryColor': '#2f6dab',
   'primaryTextColor': '#1e1e1e',
@@ -57,7 +57,7 @@ block:
 Then for any nodes you want palette-colored, add classDefs at the bottom
 (only those used):
 
-```
+```text
   classDef sysA fill:#2f6dab,color:#ffffff,stroke:#7c8ba1
   classDef sysB fill:#1d7848,color:#ffffff,stroke:#7c8ba1
   classDef sysC fill:#7457b8,color:#ffffff,stroke:#7c8ba1

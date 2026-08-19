@@ -1,120 +1,85 @@
 version: '3'
 
-# This Taskfile is for *developers of this pack*. End users install the pack
-# into their AI assistant directly via lola:
-#
-#     lola mod add <repo-url>
-#     lola install docs-discipline
-#
-# The targets below set up a developer's local environment so the pack is
-# both runnable (tests, lint) and live in their own AI assistant (via
-# lola) for self-testing.
+# Developer tooling for this repo. End users do not need Task — they install the
+# module with lola directly, as the README documents. Task's job here is
+# authoring and verification: lint, test, and prove the module installs.
+
+vars:
+  MODULE: docs-discipline
+  MODE: '{{.MODE | default "human"}}'
+  SCRIPTS_DIR: module/skills/docs-organization/scripts
+  CONTAINER_ENGINE:
+    sh: command -v podman >/dev/null 2>&1 && echo podman || { command -v docker >/dev/null 2>&1 && echo docker || echo ""; }
+  IMAGE: docs-discipline-cleanroom
 
 tasks:
   default:
-    cmds:
-      - task --list-all
+    silent: true
+    cmd: task --list
 
-  install:
-    desc: 'Install this pack into the local AI assistant via lola + npm deps for local dev (ASSISTANT=, SCOPE=user|project)'
+  vendor:
+    desc: Rebuild the vendored dependency bundles the skill ships (needs network for npm install)
     cmds:
-      # `install:scripts` runs `npm install` in the source `scripts/` dir so
-      # `task test:diagrams` and `task lint` work locally. It is NOT a
-      # prerequisite for the lola install — lola excludes `node_modules/`
-      # from the install (see ALWAYS_IGNORE in its parsers.py). End users
-      # who hit the `MERVAL_NOT_INSTALLED` finding run `npm install` at
-      # the destination as the skill instructs.
-      - task: install:scripts
-      - task: install:lola
+      - cd {{.SCRIPTS_DIR}} && npm install
+      - bash "{{.ROOT_DIR}}/.taskfiles/scripts/build-vendor.sh"
 
-  install:lola:
-    desc: 'Register and install this pack via lola (https://lobstertrap.org/lola/). Defaults to claude-code @ user scope. Override with ASSISTANT=<x> SCOPE=<user|project>.'
-    vars:
-      ASSISTANT: '{{.ASSISTANT | default "claude-code"}}'
-      SCOPE: '{{.SCOPE | default "user"}}'
-    requires:
-      vars:
-        - name: SCOPE
-          enum: [user, project]
-    preconditions:
-      - sh: command -v lola
-        msg: |
-          lola is not installed. End users install this pack via lola — see
-          https://lobstertrap.org/lola/ for installation instructions.
-          If you only want to run the test suite, use: task install:scripts
-      # Require lola >= 0.4.5 (PR #121 added gitignore-aware module copy + module-subtree
-      # detection. Earlier versions copy the entire repo including .venv/, .git/, etc.,
-      # which is slow and confuses the `mod add` walker.)
-      - sh: |
-          ver=$(lola --version 2>&1 | awk '{print $2}' | head -1 | cut -d. -f1-3)
-          [ "$(printf '%s\n%s\n' '0.4.5' "$ver" | sort -V | head -1)" = "0.4.5" ]
-        msg: "lola >= 0.4.5 required. Upgrade with: uv tool install --force git+https://github.com/LobsterTrap/lola"
-    cmds:
-      - lola mod add --name docs-discipline .
-      - lola install docs-discipline -a {{.ASSISTANT}} --scope {{.SCOPE}} {{.CLI_ARGS}}
+  lint:
+    desc: 'Structural lint of the module. MODE=llm for errors-only.'
+    cmd: bash "{{.ROOT_DIR}}/.taskfiles/scripts/lint-structure.sh" --module . --mode {{.MODE}}
 
-  install:scripts:
-    desc: Install npm dependencies for the docs-organization scripts (merval + markdown-it)
+  lint:content:
+    desc: Content-quality lint with skillsaw (needs uvx)
     cmds:
-      - cd module/skills/docs-organization/scripts && npm install
-
-  uninstall:
-    desc: Tear down everything this Taskfile installed — DESTRUCTIVE
-    cmds:
-      - task: uninstall:lola
-      - task: uninstall:scripts
-
-  uninstall:lola:
-    desc: 'Uninstall this pack via lola. Mirrors install: override with ASSISTANT=<x> SCOPE=<user|project>.'
-    vars:
-      ASSISTANT: '{{.ASSISTANT | default "claude-code"}}'
-      SCOPE: '{{.SCOPE | default "user"}}'
-    requires:
-      vars:
-        - name: SCOPE
-          enum: [user, project]
-    preconditions:
-      - sh: command -v lola
-        msg: lola is not installed — nothing to uninstall.
-    cmds:
-      - lola uninstall docs-discipline -a {{.ASSISTANT}} --scope {{.SCOPE}} -f
-      # Deregister the module from lola's registry only when no installations
-      # remain anywhere. `lola mod rm` does NOT clean up installs — running it
-      # prematurely orphans skills/commands/managed-section markers on other
-      # hosts/scopes. Parse `lola list` to confirm the module is gone.
       - |
-        if ! lola list 2>/dev/null | grep -q '^docs-discipline$'; then
-          lola mod rm -f docs-discipline
+        if ! command -v uvx >/dev/null 2>&1; then
+          echo "skillsaw needs uvx (from uv). Install uv or skip content lint." >&2; exit 1
         fi
+        # skillsaw@latest so a stale uvx cache cannot pin us to an older linter;
+        # keep .skillsaw.yaml `version:` in sync with the latest release.
+        uvx skillsaw@latest lint --strict .
 
-  uninstall:scripts:
-    desc: Remove the docs-organization scripts' node_modules — DESTRUCTIVE
-    prompt: Remove module/skills/docs-organization/scripts/node_modules?
-    cmds:
-      - rm -rf module/skills/docs-organization/scripts/node_modules
-
-  test:
-    desc: Run all tests
-    deps: [lint:module, test:unit, test:bash, test:e2e]
-
-  lint:module:
-    desc: Validate the lola module layout (AGENTS.md, SKILL.md frontmatter, command frontmatter, anchor instructions)
-    cmd: bash scripts/lint-module.sh .
+  lint:diagrams:
+    desc: Lint every mermaid diagram in the module's own docs
+    cmd: node {{.SCRIPTS_DIR}}/lint-mermaid.mjs module/ README.md
 
   test:unit:
-    desc: Run node:test unit tests
-    cmds:
-      - cd module/skills/docs-organization/scripts && npm test
+    desc: Run node:test unit tests for the docs-organization scripts
+    cmd: cd {{.SCRIPTS_DIR}} && npm test
 
   test:bash:
-    desc: Run bash script tests
+    desc: Run the bash script tests
     cmds:
-      - bash module/skills/docs-organization/scripts/check-structure.test.sh
-      - bash module/skills/docs-organization/scripts/check-staleness.test.sh
+      - bash {{.SCRIPTS_DIR}}/check-structure.test.sh
+      - bash {{.SCRIPTS_DIR}}/check-staleness.test.sh
       - bash module/skills/adr/scripts/adr-index.test.sh
 
+  test:gates:
+    desc: Run the bats suites covering the shared lint and verify scripts
+    preconditions:
+      - sh: command -v bats
+        msg: 'bats-core is required. Install it: https://bats-core.readthedocs.io/'
+      # verify-oracle.bats drives the real lola binary. Presence only: the
+      # oracle owns the >=0.5.0 floor and reports it, so the version is not
+      # duplicated here where it would rot out of sync. Beware that a second,
+      # older lola under /usr/local/bin outranks ~/.local/bin on any PATH that
+      # does not prepend it, which is how this surfaced.
+      - sh: command -v lola
+        msg: 'lola is required by tests/verify-oracle.bats. Install it: uv tool install --force git+https://github.com/LobsterTrap/lola@v0.7.0'
+    cmd: bats tests/lint-structure.bats tests/verify-oracle.bats
+
+  test:install:
+    desc: 'Sandboxed install verify across both scopes and both assistants. MODE=llm for errors-only.'
+    cmds:
+      - for: {var: MATRIX, split: ' '}
+        cmd: |
+          set -- $(echo "{{.ITEM}}" | tr ':' ' ')
+          bash "{{.ROOT_DIR}}/.taskfiles/scripts/verify-lola-module.sh" \
+            --module . --name {{.MODULE}} --assistant "$1" --scope "$2" --mode {{.MODE}}
+    vars:
+      MATRIX: 'claude-code:user claude-code:project opencode:user opencode:project'
+
   test:e2e:
-    desc: Run end-to-end Venom suite
+    desc: Run the end-to-end Venom suite
     vars:
       REPO_ROOT:
         sh: pwd
@@ -122,28 +87,68 @@ tasks:
       - mkdir -p .test-output
       - venom run tests/e2e/docs-discipline.venom.yml --output-dir=.test-output --var="WORKDIR={{.REPO_ROOT}}"
 
-  lint:
-    desc: Lint every mermaid diagram in the pack's own project docs
-    cmds:
-      - node module/skills/docs-organization/scripts/lint-mermaid.mjs module/ README.md
-
   test:diagrams:
-    desc: Lint and render every mermaid fixture under tests/diagrams/ (light + dark backgrounds, output in .test-output/diagrams/)
+    desc: Lint and render every mermaid fixture under tests/diagrams/ (light + dark, output in .test-output/diagrams/)
     cmds:
       - mkdir -p .test-output/diagrams
-      - node module/skills/docs-organization/scripts/lint-mermaid.mjs tests/diagrams/ > .test-output/diagrams/lint.json || true
-      - bash {{.ROOT_DIR}}/scripts/render-diagrams.sh {{.ROOT_DIR}}/tests/diagrams {{.ROOT_DIR}}/.test-output/diagrams {{.ROOT_DIR}}/module/skills/docs-organization/reference/palettes/er-overrides.css
+      - node {{.SCRIPTS_DIR}}/lint-mermaid.mjs tests/diagrams/ > .test-output/diagrams/lint.json || true
+      - bash {{.ROOT_DIR}}/.taskfiles/scripts/render-diagrams.sh {{.ROOT_DIR}}/tests/diagrams {{.ROOT_DIR}}/.test-output/diagrams {{.ROOT_DIR}}/module/skills/docs-organization/reference/palettes/er-overrides.css
       - cat .test-output/diagrams/manifest.txt
 
+  test:
+    desc: Run every test suite
+    cmds:
+      - task: test:unit
+      - task: test:bash
+      - task: test:gates
+      - task: test:install
+      - task: test:e2e
+
+  check:
+    desc: Run all quality gates (structural lint + content lint + diagrams + tests)
+    cmds:
+      - task: lint
+      - task: lint:content
+      - task: lint:diagrams
+      - task: test
+
+  cleanroom:build:
+    desc: Build the UBI10 cleanroom image (podman preferred, docker fallback)
+    preconditions:
+      - sh: '[ -n "{{.CONTAINER_ENGINE}}" ]'
+        msg: 'No container engine found. Install podman (preferred) or docker.'
+    cmds:
+      - 'echo "Using container engine: {{.CONTAINER_ENGINE}}"'
+      - '{{.CONTAINER_ENGINE}} build -t {{.IMAGE}} -f Containerfile .'
+
+  cleanroom:
+    desc: Build, then install-verify inside a fresh container at both scopes
+    deps: [cleanroom:build]
+    cmds:
+      - |
+        {{.CONTAINER_ENGINE}} run --rm -v "$PWD:/work:ro,Z" {{.IMAGE}} -c '
+          set -e
+          cp -R /work /tmp/mod && cd /tmp/mod
+          bash .taskfiles/scripts/verify-lola-module.sh --module . --name {{.MODULE}} --scope user --mode {{.MODE}}
+          bash .taskfiles/scripts/verify-lola-module.sh --module . --name {{.MODULE}} --scope project --mode {{.MODE}}
+        '
+
   render:
-    desc: 'Render a single .mmd file to PNG against light + dark backgrounds with the skill''s CSS override applied. Usage: task render -- path/to/diagram.mmd'
+    desc: 'Render one .mmd to PNG on light + dark backgrounds. Usage: task render -- path/to/diagram.mmd'
     cmds:
       - mkdir -p .test-output/render
-      - mmdc -i {{.CLI_ARGS}} -o .test-output/render/{{base .CLI_ARGS | replace ".mmd" ""}}.light.png -b white --cssFile module/skills/docs-organization/reference/palettes/er-overrides.css --quiet
-      - mmdc -i {{.CLI_ARGS}} -o .test-output/render/{{base .CLI_ARGS | replace ".mmd" ""}}.dark.png  -b "#1e1e1e" --cssFile module/skills/docs-organization/reference/palettes/er-overrides.css --quiet
+      - mmdc -i {{.CLI_ARGS}} -o .test-output/render/{{base .CLI_ARGS | replace ".mmd" ""}}.light.png -b white --cssFile {{.SCRIPTS_DIR}}/../reference/palettes/er-overrides.css --quiet
+      - mmdc -i {{.CLI_ARGS}} -o .test-output/render/{{base .CLI_ARGS | replace ".mmd" ""}}.dark.png  -b "#1e1e1e" --cssFile {{.SCRIPTS_DIR}}/../reference/palettes/er-overrides.css --quiet
       - 'echo "Rendered to .test-output/render/"'
 
   palette:
-    desc: 'Swap palette on an existing .mmd file. Usage: task palette -- <solar|federation|citrus|parchment> path/to/diagram.mmd. Writes to stdout — redirect to overwrite.'
+    desc: 'Swap the palette on an existing .mmd. Usage: task palette -- <solar|federation|citrus|parchment> path/to/diagram.mmd. Writes to stdout.'
+    cmd: bash {{.ROOT_DIR}}/{{.SCRIPTS_DIR}}/swap-palette.sh {{.CLI_ARGS}}
+
+  clean:
+    desc: Remove derived state — test output and the build toolchain. Never touches vendor/.
     cmds:
-      - bash {{.ROOT_DIR}}/module/skills/docs-organization/scripts/swap-palette.sh {{.CLI_ARGS}}
+      # vendor/ is committed source of record that ships to users, not scratch.
+      # `task vendor` regenerates it deliberately; clean must not remove it.
+      - rm -rf .test-output
+      - rm -rf {{.SCRIPTS_DIR}}/node_modules

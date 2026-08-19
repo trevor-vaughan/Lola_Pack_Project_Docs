@@ -1,12 +1,12 @@
-> **Illustrative example — not an ADR of this repo.** This is what `/adr-new`
-> produces after its inline self-review, shown so authors can see a target.
-> The subject project is fictional.
-
 ---
 status: proposed
 date: 2026-01-14
 deciders: platform team
 ---
+
+> **Illustrative example — not an ADR of this repo.** This is what `/adr-new`
+> produces after its inline self-review, shown so authors can see a target.
+> The subject project is fictional.
 
 # Use Postgres for primary storage
 

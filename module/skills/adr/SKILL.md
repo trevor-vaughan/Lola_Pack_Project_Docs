@@ -1,6 +1,6 @@
 ---
 name: adr
-description: Use ONLY when the user explicitly invokes /adr-new or /adr-review. Not triggered by conversation about architectural decisions, ADRs, or decision records.
+description: DO NOT AUTO-INVOKE. Use ONLY when the user explicitly invokes /adr-new or /adr-review. Not triggered by conversation about architectural decisions, ADRs, or decision records.
 ---
 
 # adr
@@ -91,6 +91,6 @@ stateDiagram-v2
 ## Cross-skill
 
 This skill does not touch general documentation or diagrams. The
-companion `docs-organization` skill (same pack) owns README/docs
+companion `docs-organization` skill (same module) owns README/docs
 structure and mermaid diagrams. ADRs are part of the developer docs
 tree but their lifecycle is managed here.

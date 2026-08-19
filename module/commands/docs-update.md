@@ -125,7 +125,7 @@ present, skip the `adr` activation.
         see, and the suggested format — and point the author at a tool rather
         than trying to build the recording:
 
-        ```
+        ```html
         <!-- DEMO: add a hero demo showing <tool> in action.
              Record: <the happy-path command sequence from the finding>
              Viewer sees: <what success looks like on screen>

@@ -1,0 +1,10 @@
+# Follow `source`/`.` directives (e.g. scripts sourcing .taskfiles/scripts/lib/scaffold.sh)
+# so variables defined in one file and used in another are not misreported as
+# unused (SC2034) or unfollowable (SC1091). Equivalent to `shellcheck -x`, and
+# auto-discovered by both local runs and CI linters (MegaLinter).
+external-sources=true
+
+# Resolve `source=...` directives relative to each script's own directory, so
+# `.taskfiles/scripts/foo.sh` finds `.taskfiles/scripts/lib/scaffold.sh` whether shellcheck runs from
+# the repo root (CI) or from within .taskfiles/scripts/ (local).
+source-path=SCRIPTDIR

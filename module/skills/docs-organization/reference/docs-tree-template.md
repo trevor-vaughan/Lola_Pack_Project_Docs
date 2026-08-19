@@ -4,7 +4,7 @@
 developer documentation. Each file below is created with placeholder
 content the user fills in.
 
-```
+```text
 docs/
   usage/                       # only when /docs-audit recommends a split
     README.md                  # index page for usage docs

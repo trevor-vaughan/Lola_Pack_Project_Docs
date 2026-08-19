@@ -1,0 +1,2 @@
+hooks:
+  pre-install: ../evil.sh

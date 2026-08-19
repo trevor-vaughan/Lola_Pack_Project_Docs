@@ -30,8 +30,24 @@ node_modules/
 .opencode/
 .cursor/
 .gemini/
+.openclaw/
 
 # --- docs-discipline project-specific ---
 # Working drafts under docs-organization's superpowers directory should
 # never be committed; the skill enforces this in audits.
 docs/superpowers/
+
+# --- Vendored-bundle build scratch ---
+# build-vendor.sh creates esbuild entry points inside the scripts tree, because
+# esbuild resolves bare specifiers from the entry file's directory. The script
+# removes them on exit; this is the belt to that braces.
+module/skills/docs-organization/scripts/.vendor-entry.*
+
+# --- Host context files written by a project-scope lola install ---
+# `lola install --scope project` writes these at the repo root. They are
+# generated, not authored.
+/CLAUDE.md
+/GEMINI.md
+
+# --- MegaLinter output ---
+megalinter-reports/

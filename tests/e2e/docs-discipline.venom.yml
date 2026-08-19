@@ -2,157 +2,188 @@ name: docs-discipline-e2e
 # WORKDIR is the repo root under test; the Taskfile passes it as
 # --var WORKDIR=<repo-root>. The "." default keeps the suite runnable
 # standalone from the repo root.
+#
+# Every step script starts with `#!/bin/bash`. Venom's exec executor defaults
+# to /bin/sh (executors/exec/exec.go) and only honors an explicit shebang.
+# /bin/sh is bash on Fedora/RHEL/UBI but dash on Ubuntu — the GitHub runner —
+# where `source` does not exist and every step dies with 127. Pin the shell so
+# local and CI runs are the same run. Venom uses the shebang line verbatim as
+# the command, so it must be a bare path: `#!/usr/bin/env bash` would exec a
+# binary literally named "/usr/bin/env bash" and fail.
+#
+# `set -euo pipefail` is the second half of that guard: without it a step whose
+# `source` failed kept going with $WORKDIR unset, silently operating on venom's
+# own working directory (tests/e2e/) instead of the scratch project — writing
+# files into the checkout and reporting PASS for audits that never saw the
+# fixture.
 vars:
   WORKDIR: "."
 testcases:
 
-- name: scaffold-fresh-project
-  steps:
-    - type: exec
-      script: |
-        set -e
-        WORKDIR=$(mktemp -d -t docs-discipline-e2e.XXXXXX)
-        # Persist both the workdir and the git-config-isolation vars so
-        # every subsequent step that sources this env file ignores the
-        # host's global/system git config. Prevents pollution from
-        # commit.gpgsign, init.defaultBranch, core.hooksPath, etc.
-        cat > /tmp/docs-discipline-e2e.env <<ENV
-        export WORKDIR="$WORKDIR"
-        export GIT_CONFIG_GLOBAL=/dev/null
-        export GIT_CONFIG_SYSTEM=/dev/null
-        ENV
-        source /tmp/docs-discipline-e2e.env
-        cd "$WORKDIR"
-        git init -q
-        git config user.email "test@test"
-        git config user.name "test"
-        mkdir -p src
-        echo "function f() {}" > src/main.js
-        git add src/main.js
-        GIT_AUTHOR_DATE="2026-05-13T10:00:00" GIT_COMMITTER_DATE="2026-05-13T10:00:00" \
-          git commit -q -m "initial source"
-      assertions:
-        - result.code ShouldEqual 0
+  - name: scaffold-fresh-project
+    steps:
+      - type: exec
+        script: |
+          #!/bin/bash
+          set -euo pipefail
+          WORKDIR=$(mktemp -d -t docs-discipline-e2e.XXXXXX)
+          # Persist both the workdir and the git-config-isolation vars so
+          # every subsequent step that sources this env file ignores the
+          # host's global/system git config. Prevents pollution from
+          # commit.gpgsign, init.defaultBranch, core.hooksPath, etc.
+          cat > /tmp/docs-discipline-e2e.env <<ENV
+          export WORKDIR="$WORKDIR"
+          export GIT_CONFIG_GLOBAL=/dev/null
+          export GIT_CONFIG_SYSTEM=/dev/null
+          ENV
+          source /tmp/docs-discipline-e2e.env
+          cd "$WORKDIR"
+          git init -q
+          git config user.email "test@test"
+          git config user.name "test"
+          mkdir -p src
+          echo "function f() {}" > src/main.js
+          git add src/main.js
+          GIT_AUTHOR_DATE="2026-05-13T10:00:00" GIT_COMMITTER_DATE="2026-05-13T10:00:00" \
+            git commit -q -m "initial source"
+        assertions:
+          - result.code ShouldEqual 0
 
-- name: structural-audit-on-empty-project
-  steps:
-    - type: exec
-      script: |
-        source /tmp/docs-discipline-e2e.env
-        cd "$WORKDIR"
-        bash {{.WORKDIR}}/module/skills/docs-organization/scripts/check-structure.sh
-      assertions:
-        - result.code ShouldEqual 1
-        - result.systemout ShouldContainSubstring "MISSING_README"
-        # No docs/ tree yet, so the preventive docs/superpowers gitignore entry
-        # is intentionally NOT demanded — gated behavior (see
-        # check-structure.test.sh Test 2b). Nagging a repo that does not use the
-        # docs workflow is noise, not a defect.
-        - result.systemout ShouldNotContainSubstring "MISSING_GITIGNORE_SUPERPOWERS"
+  - name: structural-audit-on-empty-project
+    steps:
+      - type: exec
+        script: |
+          #!/bin/bash
+          set -euo pipefail
+          source /tmp/docs-discipline-e2e.env
+          cd "$WORKDIR"
+          bash {{.WORKDIR}}/module/skills/docs-organization/scripts/check-structure.sh
+        assertions:
+          - result.code ShouldEqual 1
+          - result.systemout ShouldContainSubstring "MISSING_README"
+          # No docs/ tree yet, so the preventive docs/superpowers gitignore entry
+          # is intentionally NOT demanded — gated behavior (see
+          # check-structure.test.sh Test 2b). Nagging a repo that does not use the
+          # docs workflow is noise, not a defect.
+          - result.systemout ShouldNotContainSubstring "MISSING_GITIGNORE_SUPERPOWERS"
 
-- name: write-readme-and-gitignore
-  steps:
-    - type: exec
-      script: |
-        source /tmp/docs-discipline-e2e.env
-        cd "$WORKDIR"
-        cat > README.md <<'README_EOF'
-        # test project
+  - name: write-readme-and-gitignore
+    steps:
+      - type: exec
+        script: |
+          #!/bin/bash
+          set -euo pipefail
+          source /tmp/docs-discipline-e2e.env
+          cd "$WORKDIR"
+          cat > README.md <<'README_EOF'
+          # test project
 
-        ## Install
-        npm install
+          ## Install
+          npm install
 
-        ## Quickstart
-        node src/main.js
-        README_EOF
-        echo "docs/superpowers/" > .gitignore
-        git add README.md .gitignore
-        GIT_AUTHOR_DATE="2026-05-13T11:00:00" GIT_COMMITTER_DATE="2026-05-13T11:00:00" \
-          git commit -q -m "add readme and gitignore"
-      assertions:
-        - result.code ShouldEqual 0
+          ## Quickstart
+          node src/main.js
+          README_EOF
+          echo "docs/superpowers/" > .gitignore
+          git add README.md .gitignore
+          GIT_AUTHOR_DATE="2026-05-13T11:00:00" GIT_COMMITTER_DATE="2026-05-13T11:00:00" \
+            git commit -q -m "add readme and gitignore"
+        assertions:
+          - result.code ShouldEqual 0
 
-- name: structural-audit-clean-after-scaffold
-  steps:
-    - type: exec
-      script: |
-        source /tmp/docs-discipline-e2e.env
-        cd "$WORKDIR"
-        bash {{.WORKDIR}}/module/skills/docs-organization/scripts/check-structure.sh
-      assertions:
-        - result.code ShouldEqual 0
-        - result.systemout ShouldContainSubstring '"status"'
-        - result.systemout ShouldContainSubstring '"ok"'
+  - name: structural-audit-clean-after-scaffold
+    steps:
+      - type: exec
+        script: |
+          #!/bin/bash
+          set -euo pipefail
+          source /tmp/docs-discipline-e2e.env
+          cd "$WORKDIR"
+          bash {{.WORKDIR}}/module/skills/docs-organization/scripts/check-structure.sh
+        assertions:
+          - result.code ShouldEqual 0
+          - result.systemout ShouldContainSubstring '"status"'
+          - result.systemout ShouldContainSubstring '"ok"'
 
-- name: staleness-audit-detects-old-readme
-  steps:
-    - type: exec
-      script: |
-        source /tmp/docs-discipline-e2e.env
-        cd "$WORKDIR"
-        # Bump the source file with a newer commit date than the README.
-        echo "function g() {}" >> src/main.js
-        git add src/main.js
-        GIT_AUTHOR_DATE="2026-06-01T10:00:00" GIT_COMMITTER_DATE="2026-06-01T10:00:00" \
-          git commit -q -m "code change after readme"
-        bash {{.WORKDIR}}/module/skills/docs-organization/scripts/check-staleness.sh
-      assertions:
-        - result.code ShouldEqual 1
-        - result.systemout ShouldContainSubstring "STALE_README"
+  - name: staleness-audit-detects-old-readme
+    steps:
+      - type: exec
+        script: |
+          #!/bin/bash
+          set -euo pipefail
+          source /tmp/docs-discipline-e2e.env
+          cd "$WORKDIR"
+          # Bump the source file with a newer commit date than the README.
+          echo "function g() {}" >> src/main.js
+          git add src/main.js
+          GIT_AUTHOR_DATE="2026-06-01T10:00:00" GIT_COMMITTER_DATE="2026-06-01T10:00:00" \
+            git commit -q -m "code change after readme"
+          bash {{.WORKDIR}}/module/skills/docs-organization/scripts/check-staleness.sh
+        assertions:
+          - result.code ShouldEqual 1
+          - result.systemout ShouldContainSubstring "STALE_README"
 
-- name: mermaid-lint-clean-diagram
-  steps:
-    - type: exec
-      script: |
-        source /tmp/docs-discipline-e2e.env
-        cd "$WORKDIR"
-        node {{.WORKDIR}}/module/skills/docs-organization/scripts/lint-mermaid.mjs --json \
-          {{.WORKDIR}}/module/skills/docs-organization/scripts/__fixtures__/good.mmd
-      assertions:
-        - result.code ShouldEqual 0
-        - result.systemout ShouldContainSubstring '"status"'
-        - result.systemout ShouldContainSubstring '"ok"'
+  - name: mermaid-lint-clean-diagram
+    steps:
+      - type: exec
+        script: |
+          #!/bin/bash
+          set -euo pipefail
+          source /tmp/docs-discipline-e2e.env
+          cd "$WORKDIR"
+          node {{.WORKDIR}}/module/skills/docs-organization/scripts/lint-mermaid.mjs --json \
+            {{.WORKDIR}}/module/skills/docs-organization/scripts/__fixtures__/good.mmd
+        assertions:
+          - result.code ShouldEqual 0
+          - result.systemout ShouldContainSubstring '"status"'
+          - result.systemout ShouldContainSubstring '"ok"'
 
-- name: mermaid-lint-rejects-low-contrast
-  steps:
-    - type: exec
-      script: |
-        source /tmp/docs-discipline-e2e.env
-        cd "$WORKDIR"
-        node {{.WORKDIR}}/module/skills/docs-organization/scripts/lint-mermaid.mjs --json \
-          {{.WORKDIR}}/module/skills/docs-organization/scripts/__fixtures__/low-contrast.mmd
-      assertions:
-        - result.code ShouldEqual 1
-        - result.systemout ShouldContainSubstring "LOW_CONTRAST"
+  - name: mermaid-lint-rejects-low-contrast
+    steps:
+      - type: exec
+        script: |
+          #!/bin/bash
+          set -euo pipefail
+          source /tmp/docs-discipline-e2e.env
+          cd "$WORKDIR"
+          node {{.WORKDIR}}/module/skills/docs-organization/scripts/lint-mermaid.mjs --json \
+            {{.WORKDIR}}/module/skills/docs-organization/scripts/__fixtures__/low-contrast.mmd
+        assertions:
+          - result.code ShouldEqual 1
+          - result.systemout ShouldContainSubstring "LOW_CONTRAST"
 
-- name: adr-index-builds-from-files
-  steps:
-    - type: exec
-      script: |
-        source /tmp/docs-discipline-e2e.env
-        cd "$WORKDIR"
-        mkdir -p docs/dev/adr
-        cat > docs/dev/adr/0001-first.md <<'ADR_EOF'
-        ---
-        status: accepted
-        date: 2026-05-01
-        ---
+  - name: adr-index-builds-from-files
+    steps:
+      - type: exec
+        script: |
+          #!/bin/bash
+          set -euo pipefail
+          source /tmp/docs-discipline-e2e.env
+          cd "$WORKDIR"
+          mkdir -p docs/dev/adr
+          cat > docs/dev/adr/0001-first.md <<'ADR_EOF'
+          ---
+          status: accepted
+          date: 2026-05-01
+          ---
 
-        # First decision
-        ADR_EOF
-        bash {{.WORKDIR}}/module/skills/adr/scripts/adr-index.sh docs/dev/adr
-        cat docs/dev/adr/index.md
-      assertions:
-        - result.code ShouldEqual 0
-        - result.systemout ShouldContainSubstring "First decision"
-        - result.systemout ShouldContainSubstring "accepted"
+          # First decision
+          ADR_EOF
+          bash {{.WORKDIR}}/module/skills/adr/scripts/adr-index.sh docs/dev/adr
+          cat docs/dev/adr/index.md
+        assertions:
+          - result.code ShouldEqual 0
+          - result.systemout ShouldContainSubstring "First decision"
+          - result.systemout ShouldContainSubstring "accepted"
 
-- name: cleanup
-  steps:
-    - type: exec
-      script: |
-        source /tmp/docs-discipline-e2e.env
-        rm -rf "$WORKDIR"
-        rm -f /tmp/docs-discipline-e2e.env
-      assertions:
-        - result.code ShouldEqual 0
+  - name: cleanup
+    steps:
+      - type: exec
+        script: |
+          #!/bin/bash
+          set -euo pipefail
+          source /tmp/docs-discipline-e2e.env
+          rm -rf "$WORKDIR"
+          rm -f /tmp/docs-discipline-e2e.env
+        assertions:
+          - result.code ShouldEqual 0
