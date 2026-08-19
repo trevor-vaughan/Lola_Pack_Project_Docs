@@ -9,7 +9,7 @@
   "devDependencies": {
     "@aj-archipelago/merval": "1.0.7",
     "esbuild": "0.25.12",
-    "markdown-it": "14.1.0"
+    "markdown-it": "15.0.0"
   },
   "scripts": {
     "test": "node --test --test-reporter=spec contrast.test.mjs lint-mermaid.test.mjs apply-palette.test.mjs validate-palette.test.mjs check-prose.test.mjs check-refs.test.mjs"
